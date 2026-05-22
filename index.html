@@ -480,6 +480,40 @@ tbody td:first-child {
   justify-content: center;
   gap: 32px;
 }
+.slide--cover-gradient {
+  background: #D5F3F1;
+  overflow: hidden;
+}
+.slide--cover-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('src/background/figma-cover-gradient.svg') center / cover no-repeat;
+  z-index: 0;
+}
+.slide--cover-gradient .cover-title,
+.slide--cover-gradient .cover-sub,
+.slide--cover-gradient .cover-meta {
+  position: relative;
+  z-index: 1;
+}
+.slide--cover-gradient .cover-title,
+.slide--cover-gradient .cover-sub {
+  color: #000000;
+}
+.slide--cover-gradient .cover-meta {
+  color: rgba(0,0,0,0.65);
+}
+.cover-logo {
+  position: absolute;
+  right: 80px;
+  bottom: 100px;
+  width: 142px;
+  height: 20px;
+  z-index: 1;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
 .cover-title {
   font-size: 80px;
   font-weight: 800;
@@ -993,13 +1027,14 @@ tbody tr:last-child { border-bottom: none; }
 <div class="deck-wrapper" id="deck">
 
   <!-- ─── 01 커버 ─────────────────────────────── -->
-  <section class="slide slide--cover active">
+  <section class="slide slide--cover slide--cover-gradient active" data-hide-counter>
     <h1 class="cover-title">AI 퍼소나,<br>이렇게 만들었습니다</h1>
     <p class="cover-sub">리서치 데이터에서 대화 가능한 유저까지</p>
     <div class="cover-meta">
       <span>일본 팬 퍼소나 제작 케이스</span>
       <span>이정주 · 프로덕트디자인1팀 · 2026</span>
     </div>
+    <img class="cover-logo" src="src/background/weverse-logo.svg" alt="weverse">
   </section>
 
   <!-- ─── 02 목차 ─────────────────────────────── -->
@@ -1931,7 +1966,11 @@ tbody tr:last-child { border-bottom: none; }
 
   function show(n) {
     const next = Math.max(0, Math.min(slides.length - 1, n));
-    if (next === idx && slides[idx].classList.contains('active')) return;
+    if (next === idx && slides[idx].classList.contains('active')) {
+      counter.textContent = String(idx + 1).padStart(2, '0');
+      counter.style.display = slides[idx].hasAttribute('data-hide-counter') ? 'none' : '';
+      return;
+    }
     slides[idx].classList.remove('active');
     idx = next;
     slides[idx].classList.add('active');
