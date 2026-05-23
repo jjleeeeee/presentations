@@ -793,21 +793,38 @@ tbody tr:last-child td { border-bottom:0; }
 .word-cluster.is-revealed .word-cluster__center { transform:scale(.72); opacity:.34; }
 .word-cluster.is-revealed .word-cluster__word { opacity:1; transform:translate(-50%, -50%) scale(1); }
 .flow-compare {
-  width:100%; display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
+  width:100%; min-height:560px; display:flex; align-items:center; justify-content:center;
 }
-.flow-panel {
-  min-height:410px; border:1px solid rgba(255,255,255,.14); padding:48px; display:flex; flex-direction:column; justify-content:center; gap:28px;
+.flow-compare-svg { width:100%; max-width:1420px; overflow:visible; font-family:'Pretendard', sans-serif; }
+.flow-group--left {
+  opacity:1; transition:opacity .8s cubic-bezier(.22,1,.36,1), filter .8s ease;
 }
-.flow-panel__label { font-size:22px; font-weight:800; color:var(--accent); letter-spacing:.05em; text-transform:uppercase; }
-.flow-panel__steps { display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap; }
+.flow-group--right {
+  opacity:0; transform:translateY(12px);
+  transition:opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1);
+}
+.flow-compare.is-revealed .flow-group--left { opacity:.2; filter:blur(.3px); }
+.flow-compare.is-revealed .flow-group--right { opacity:1; transform:translateY(0); }
+.flow-compare .flow-node,
+.flow-compare .flow-connector,
+.flow-compare .flow-pill {
+  opacity:0; transition:opacity .55s ease, transform .55s cubic-bezier(.22,1,.36,1);
+  transition-delay:var(--d, 0s);
+}
+.flow-compare .flow-node { transform:translateY(10px); }
+.slide.active .flow-group--left .flow-node,
+.slide.active .flow-group--left .flow-connector,
+.slide.active .flow-group--left .flow-pill,
+.flow-compare.is-revealed .flow-group--right .flow-node,
+.flow-compare.is-revealed .flow-group--right .flow-connector,
+.flow-compare.is-revealed .flow-group--right .flow-pill {
+  opacity:1; transform:translateY(0);
+}
 .flow-chip {
   min-width:130px; padding:18px 22px; border:1px solid rgba(255,255,255,.2);
   font-size:26px; font-weight:800; text-align:center;
 }
 .flow-arrow { color:rgba(255,255,255,.32); font-size:28px; font-weight:800; }
-.flow-compare.is-revealed .flow-panel--left { opacity:.2; filter:blur(.3px); }
-.flow-panel--right { opacity:.3; transition:opacity .9s ease; }
-.flow-compare.is-revealed .flow-panel--right { opacity:1; }
 .simple-chain { display:flex; align-items:center; justify-content:center; gap:28px; width:100%; }
 .simple-chain .flow-chip { font-size:36px; min-width:190px; padding:28px; }
 .linear-stages {
@@ -1054,8 +1071,7 @@ const slides = [
   { chapter:1, type:'centerMessage', msg:'AI 툴 소개가 아니라 작업 흐름의 이야기', cap:'LLM을 가볍게 이해하고, 실제 작업에 연결한 뒤, 나만의 하네스와 워크플로우로 정리해봅니다.' },
   { chapter:2, type:'typingOnly', typingText:'대한민국의 수도는' },
   { chapter:2, type:'graphView', msg:'LLM은 다음 말을 예측하는 모델입니다.', cap:'엄청난 양의 문장과 패턴이 쌓이면, 단순한 예측이 요약·추론·코드·기획처럼 보이기 시작합니다.' },
-  { chapter:2, type:'wordCluster', msg:'단순 문장 완성을 넘어', cap:'스케일이 커지면 예측은 복합 작업처럼 보이기 시작합니다.', center:'다음 단어', words:['요약','추론','코드','기획'] },
-  { chapter:2, type:'flowCompare', msg:'검색 도구가 아니라<br>작업 인터페이스가 됩니다.', cap:'AI는 점점 함께 작업하는 형태로 진화하고 있습니다.', left:['질문','답변','종료'], right:['Ask','Plan','Make','Review'] },
+  { chapter:2, type:'flowCompare', msg:'LLM은 검색 도구가 아니라<br>작업 인터페이스가 됩니다.', cap:'AI는 점점 함께 작업하는 형태로 진화하고 있습니다.', left:['질문','답변','종료'], right:['Ask','Plan','Make','Review'] },
   { chapter:3, type:'simpleChain', msg:'질문 하나, 답변 하나, 끝', cap:'많은 사용은 여기서 멈춥니다.', steps:['질문','답변','종료'] },
   { chapter:3, type:'linearStages', msg:'생산성은 흐름 안에서 올라갑니다', cap:'AI가 각 단계에 들어올 때 작업 방식이 바뀝니다.', stages:['리서치','기획 정리','디자인 방향','코드','문서','QA'] },
   { chapter:3, type:'partnerBoard', msg:'챗봇이 아니라 작업 파트너', cap:'AI의 위치가 작업 바깥에서 작업판 안으로 이동합니다.', nodes:['리서치','정리','수정','검수'] },
@@ -1218,14 +1234,42 @@ function wordClusterHTML(s) {
 }
 
 function flowCompareHTML(s) {
-  const flow = (items) => items.map((item, i) => `<span class="flow-chip reveal-item" ${stepStyle(i)}>${item}</span>${i < items.length - 1 ? '<span class="flow-arrow">→</span>' : ''}`).join('');
+  const topX = [430, 710, 990];
+  const bottomX = [290, 570, 850, 1130];
+  const node = (x, y, label, num, accent, delay) => `
+    <g class="flow-node" style="--d:${delay}s">
+      <circle cx="${x}" cy="${y}" r="112" fill="none" stroke="${accent ? '#01D5DF' : '#FFF'}" stroke-width="${accent ? 2 : 1.5}"/>
+      <text x="${x}" y="${y - 24}" text-anchor="middle" dominant-baseline="central" fill="${accent ? '#01D5DF' : '#FFF'}" font-size="20" font-weight="800">${String(num).padStart(2, '0')}</text>
+      <text x="${x}" y="${y + 16}" text-anchor="middle" dominant-baseline="central" fill="#FFF" font-size="24" font-weight="800">${label}</text>
+    </g>`;
+  const connector = (xs, y, cx, accent, delay) => `
+    <g class="flow-connector" stroke="${accent ? '#01D5DF' : '#FFF'}" stroke-width="1.5" fill="none" style="--d:${delay}s">
+      <line x1="${cx}" y1="${y - 160}" x2="${cx}" y2="${y - 118}"/>
+      <line x1="${xs[0]}" y1="${y - 118}" x2="${xs[xs.length - 1]}" y2="${y - 118}"/>
+      ${xs.map(x => `<line x1="${x}" y1="${y - 118}" x2="${x}" y2="${y - 112}"/>`).join('')}
+    </g>`;
+  const pill = (x, width, label, accent, delay) => `
+    <g class="flow-pill" style="--d:${delay}s">
+      <rect x="${x - width / 2}" y="${accent ? 8 : 298}" width="${width}" height="58" rx="29" fill="${accent ? '#01D5DF' : '#FFF'}"/>
+      <text x="${x}" y="${accent ? 37 : 327}" text-anchor="middle" dominant-baseline="central" fill="#000" font-size="23" font-weight="800">${label}</text>
+    </g>`;
   return `
     <h1 class="title">${s.msg}</h1>
     <p class="sub">${s.cap}</p>
     <div class="scene-canvas">
       <div class="flow-compare step-reveal">
-        <div class="flow-panel flow-panel--left"><p class="flow-panel__label">Search</p><div class="flow-panel__steps">${flow(s.left)}</div></div>
-        <div class="flow-panel flow-panel--right"><p class="flow-panel__label">Workflow</p><div class="flow-panel__steps">${flow(s.right)}</div></div>
+        <svg class="flow-compare-svg" viewBox="0 0 1420 690">
+          <g class="flow-group--left">
+            ${connector(topX, 190, topX[1], true, '.05')}
+            ${pill(topX[1], 300, 'Search', true, '.12')}
+            ${s.left.map((label, i) => node(topX[i], 190, label, i + 1, true, (.22 + i * .12).toFixed(2))).join('')}
+          </g>
+          <g class="flow-group--right">
+            ${connector(bottomX, 480, (bottomX[1] + bottomX[2]) / 2, false, '.05')}
+            ${pill((bottomX[1] + bottomX[2]) / 2, 340, 'Workflow', false, '.12')}
+            ${s.right.map((label, i) => node(bottomX[i], 480, label, i + 4, false, (.22 + i * .12).toFixed(2))).join('')}
+          </g>
+        </svg>
       </div>
     </div>`;
 }
