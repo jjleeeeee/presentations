@@ -1,6 +1,10 @@
 # LLM to Harness Workflow
 
-아직 완성된 deck은 없고, 발표 원고와 기획 문서가 정리되어 있습니다.
+발표 원고, 기획 문서, HTML deck이 정리되어 있습니다.
+
+## Deck
+
+- [HTML Deck](deck/)
 
 ## Content
 
