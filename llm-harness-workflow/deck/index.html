@@ -875,8 +875,8 @@ tbody tr:last-child td { border-bottom:0; }
   align-items:center;
   justify-content:center;
   text-align:center;
-  gap:22px;
-  padding:70px 54px;
+  gap:34px;
+  padding:58px 42px;
   border:1.5px solid #000;
   background:transparent;
   transition:opacity .8s cubic-bezier(.22,1,.36,1), filter .8s ease, transform .8s cubic-bezier(.22,1,.36,1);
@@ -889,22 +889,56 @@ tbody tr:last-child td { border-bottom:0; }
 .flow-compare.is-revealed .flow-circle--from { opacity:.2; filter:blur(.3px); }
 .flow-compare.is-revealed .flow-circle--to { opacity:1; transform:translateY(0); }
 .flow-circle__title {
-  font-size:42px;
+  font-size:38px;
   line-height:1.18;
   font-weight:800;
   color:#000;
 }
-.flow-circle__list {
-  list-style:none;
+.flow-circle__steps {
   display:flex;
-  flex-direction:column;
-  gap:10px;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  width:100%;
 }
-.flow-circle__list li {
-  font-size:26px;
-  line-height:1.35;
-  font-weight:700;
+.flow-circle__steps--workflow {
+  gap:4px;
+}
+.flow-circle__steps--workflow .flow-mini-node {
+  width:70px;
+  height:70px;
+  font-size:20px;
+}
+.flow-circle__steps--workflow .flow-mini-arrow {
+  font-size:18px;
+}
+.flow-mini-node {
+  width:92px;
+  height:92px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1.5px solid rgba(0,0,0,.34);
+  background:rgba(255,255,255,.22);
+  font-size:24px;
+  line-height:1;
+  font-weight:800;
   color:#000;
+  flex:0 0 auto;
+}
+.flow-circle--to .flow-mini-node {
+  border-color:var(--accent);
+}
+.flow-mini-arrow {
+  font-size:24px;
+  line-height:1;
+  font-weight:800;
+  color:rgba(0,0,0,.4);
+  flex:0 0 auto;
+}
+.flow-circle--to .flow-mini-arrow {
+  color:var(--accent);
 }
 .flow-circle-arrow {
   display:flex;
@@ -1353,6 +1387,10 @@ function wordClusterHTML(s) {
 }
 
 function flowCompareHTML(s) {
+  const miniFlow = (items, modifier = '') => `
+    <div class="flow-circle__steps ${modifier}">
+      ${items.map((item, i) => `<span class="flow-mini-node">${item}</span>${i < items.length - 1 ? '<span class="flow-mini-arrow">→</span>' : ''}`).join('')}
+    </div>`;
   return `
     <h1 class="title">${s.msg}</h1>
     <p class="sub">${s.cap}</p>
@@ -1360,14 +1398,14 @@ function flowCompareHTML(s) {
       <div class="flow-compare flow-compare--circles step-reveal">
         <div class="flow-circle flow-circle--from">
           <p class="flow-circle__title">검색창처럼<br>쓰는 AI</p>
-          <ul class="flow-circle__list">${s.left.map(item => `<li>${item}</li>`).join('')}</ul>
+          ${miniFlow(s.left)}
         </div>
         <div class="flow-circle-arrow" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </div>
         <div class="flow-circle flow-circle--to">
           <p class="flow-circle__title">작업 흐름 안의<br>AI</p>
-          <ul class="flow-circle__list">${s.right.map(item => `<li>${item}</li>`).join('')}</ul>
+          ${miniFlow(s.right, 'flow-circle__steps--workflow')}
         </div>
       </div>
     </div>`;
