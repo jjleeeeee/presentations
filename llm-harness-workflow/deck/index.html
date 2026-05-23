@@ -23,17 +23,13 @@ body {
 .slide {
   position:absolute; inset:0; padding:100px 80px; background:var(--bg);
   display:flex; flex-direction:column; gap:24px; overflow:hidden;
-  opacity:0; pointer-events:none; transition:opacity .22s ease;
+  opacity:0; pointer-events:none; z-index:0;
+  transition:opacity .55s cubic-bezier(.22,1,.36,1);
 }
-.slide.active { opacity:1; pointer-events:auto; }
-.slide::after {
-  content:attr(data-count); position:absolute; right:80px; bottom:100px;
-  font-size:20px; color:var(--gray-500); font-weight:500;
-}
-.slide[data-hide-counter]::after { display:none; }
-.eyebrow { font-size:20px; font-weight:800; color:var(--accent); letter-spacing:.08em; text-transform:uppercase; }
+.slide.active { opacity:1; pointer-events:auto; z-index:1; }
+.slide.is-leaving { opacity:0; pointer-events:none; z-index:2; }
 .title { font-size:48px; font-weight:800; line-height:1.2; letter-spacing:-.96px; max-width:1220px; }
-.sub { font-size:24px; line-height:1.6; color:var(--gray-600); max-width:960px; }
+.sub { font-size:24px; font-weight:500; line-height:1.6; color:var(--text); max-width:960px; margin-top:-8px; }
 .content { flex:1; display:flex; flex-direction:column; justify-content:center; gap:40px; margin-top:56px; }
 .accent { color:var(--accent); }
 
@@ -52,27 +48,439 @@ body {
   mix-blend-mode:overlay; pointer-events:none;
 }
 
+.slide--coverInvert {
+  background:#D5F3F1;
+  color:#000;
+}
+.slide--coverInvert::before {
+  content:''; position:absolute; inset:0;
+  background:url('../../style-kit/assets/background/figma-cover-gradient.svg') center/cover no-repeat;
+  z-index:0;
+}
+.slide--coverInvert > * {
+  position:relative;
+  z-index:1;
+}
+.slide--coverInvert .title,
+.slide--coverInvert .sub,
+.slide--coverInvert .visual-title {
+  color:#000;
+}
+.slide--coverInvert .sub,
+.slide--coverInvert .visual-title {
+  opacity:.72;
+}
+.slide--coverInvert .visual-stage {
+  border-color:rgba(0,0,0,.16);
+  background:rgba(255,255,255,.28);
+}
+.slide--coverInvert .visual-stage::before {
+  border-color:rgba(0,0,0,.07);
+}
+.slide--coverInvert .chip {
+  color:#000;
+  border-color:rgba(0,0,0,.16);
+  background:rgba(255,255,255,.44);
+}
+.slide--typingOnly {
+  align-items:center;
+  justify-content:center;
+  background:#D5F3F1;
+  color:#000;
+}
+.slide--typingOnly::before {
+  content:''; position:absolute; inset:0;
+  background:url('../../style-kit/assets/background/figma-cover-gradient.svg') center/cover no-repeat;
+  z-index:0;
+}
+.slide--typingOnly .typing-line {
+  position:relative;
+  z-index:1;
+}
+.slide--graphView {
+  background:#D5F3F1;
+  color:#000;
+}
+.slide--graphView::before {
+  content:''; position:absolute; inset:0;
+  background:url('../../style-kit/assets/background/figma-cover-gradient.svg') center/cover no-repeat;
+  z-index:0;
+}
+.slide--graphView > * {
+  position:relative;
+  z-index:1;
+}
+.slide--graphView .title,
+.slide--graphView .sub {
+  color:#000;
+}
+.slide--graphView .sub {
+  opacity:.68;
+}
+.graph-keyword {
+  position:relative;
+  flex:1;
+  color:#000;
+  font-size:36px;
+  line-height:1.35;
+  font-weight:800;
+  letter-spacing:0;
+  white-space:nowrap;
+  overflow:hidden;
+}
+.graph-keyword__field {
+  position:absolute;
+  left:50%;
+  top:50%;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  transform:translate(-50%, -50%);
+  transition:opacity .75s ease, transform .75s cubic-bezier(.22,1,.36,1), filter .75s ease;
+}
+.graph-keyword__row {
+  display:flex;
+  justify-content:center;
+  gap:36px;
+}
+.graph-keyword__row:nth-child(even) {
+  transform:translateX(-58px);
+}
+.graph-keyword__row:nth-child(odd) {
+  transform:translateX(58px);
+}
+.graph-keyword span {
+  flex:0 0 auto;
+  opacity:0;
+  transform:translateY(8px);
+  transition:opacity .5s ease, transform .5s ease;
+  transition-delay:calc(var(--i) * .035s);
+}
+.graph-keyword__row--center span.is-center,
+.graph-keyword.is-expanded .graph-keyword__row--center span,
+.graph-keyword.is-stacked span {
+  opacity:1;
+  transform:translateY(0);
+}
+.graph-keyword:not(.is-expanded) .graph-keyword__row--center span:not(.is-center),
+.graph-keyword:not(.is-stacked) .graph-keyword__row:not(.graph-keyword__row--center) span {
+  width:0;
+  margin-left:-36px;
+  overflow:hidden;
+}
+.graph-keyword.is-ascii .graph-keyword__field {
+  opacity:0;
+  transform:translate(-50%, -50%) scale(.72);
+  filter:blur(2px);
+}
+.graph-ascii {
+  position:absolute;
+  left:50%;
+  top:50%;
+  display:grid;
+  transform:translate(-50%, -50%) scale(1.12);
+  opacity:0;
+  transition:opacity .9s ease .18s, transform .9s cubic-bezier(.22,1,.36,1) .18s;
+  font-family:'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size:9px;
+  line-height:1;
+  font-weight:800;
+  letter-spacing:0;
+  color:#000;
+  pointer-events:none;
+  white-space:pre;
+}
+.graph-keyword.is-ascii .graph-ascii {
+  opacity:1;
+  transform:translate(-50%, -50%) scale(1);
+}
+.graph-ascii span {
+  width:9px;
+  height:9px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  transform:none;
+  transition:none;
+}
+.graph-stage {
+  width:100%;
+  height:640px;
+  margin-top:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.graph-svg {
+  width:1560px;
+  height:640px;
+  overflow:visible;
+  mix-blend-mode:overlay;
+}
+.blend-test-dot {
+  position:absolute;
+  left:160px;
+  top:430px;
+  width:120px;
+  height:120px;
+  z-index:2;
+  mix-blend-mode:overlay;
+}
+.graph-line,
+.graph-link {
+  stroke:#000;
+  stroke-linecap:round;
+  opacity:0;
+  mix-blend-mode:normal;
+  vector-effect:non-scaling-stroke;
+}
+.graph-line {
+  stroke-width:1.2;
+  stroke-dasharray:1;
+  stroke-dashoffset:1;
+}
+.graph-link {
+  stroke-width:.75;
+  stroke-dasharray:1;
+  stroke-dashoffset:1;
+}
+.graph-node {
+  fill:#000;
+  opacity:0;
+  mix-blend-mode:normal;
+  transform:translate(var(--dx), var(--dy)) scale(.2);
+  transform-box:fill-box;
+  transform-origin:center;
+}
+.graph-core {
+  fill:#000;
+  opacity:0;
+  mix-blend-mode:normal;
+  transform-box:fill-box;
+  transform-origin:center;
+}
+.graph-mesh {
+  opacity:1;
+}
+.slide.active .graph-core {
+  animation:graph-core-in .42s ease .18s forwards, graph-core-pulse 1.4s ease-in-out .72s 2;
+}
+.slide.active .graph-line,
+.slide.active .graph-link {
+  animation:graph-line-out .92s cubic-bezier(.22,1,.36,1) forwards;
+  animation-delay:var(--d);
+}
+.slide.active .graph-node {
+  animation:graph-node-out .92s cubic-bezier(.22,1,.36,1) forwards;
+  animation-delay:var(--d);
+}
+@keyframes graph-core-in {
+  from { opacity:0; transform:scale(.4); }
+  to { opacity:.28; transform:scale(1); }
+}
+@keyframes graph-core-pulse {
+  50% { transform:scale(1.8); opacity:.18; }
+}
+@keyframes graph-line-out {
+  to { opacity:var(--o); stroke-dashoffset:0; }
+}
+@keyframes graph-node-out {
+  to { opacity:var(--o); transform:translate(0, 0) scale(1); }
+}
+
 .slide--toc { flex-direction:row; padding:0; }
-.toc-left { width:50%; padding:100px 60px 100px 80px; display:flex; flex-direction:column; gap:24px; }
-.toc-right { width:50%; padding:100px 80px 100px 60px; display:grid; grid-template-columns:1fr 1fr; gap:40px; align-content:center; }
-.toc-item { display:flex; gap:16px; align-items:baseline; margin-bottom:15px; }
-.toc-item .n, .toc-item .t { font-size:24px; line-height:1.45; font-weight:700; }
-.toc-item .n { width:32px; color:var(--accent); }
+.toc-left { width:50%; flex-shrink:0; padding:100px 60px 100px 80px; display:flex; flex-direction:column; justify-content:flex-start; gap:24px; }
+.toc-right { width:50%; flex-shrink:0; padding:100px 80px 100px 60px; display:flex; align-items:flex-end; }
+.toc-list { display:flex; flex-direction:column; gap:10px; }
+.toc-right .toc-list + .toc-list { margin-left:80px; }
+.toc-item { display:flex; gap:16px; align-items:baseline; margin-bottom:10px; }
+.toc-item .n, .toc-item .t { font-size:24px; line-height:1.4; font-weight:500; }
+.toc-item .n { width:28px; flex-shrink:0; color:var(--text); font-weight:700; }
 .toc-item .t { color:var(--text); font-weight:500; }
 
-.chapter-slide { justify-content:center; }
+.chapter-slide { justify-content:center; align-items:center; text-align:center; }
 .chapter-kicker { font-size:24px; color:var(--accent); font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
 .chapter-title { font-size:72px; line-height:1.12; letter-spacing:-1.44px; font-weight:800; max-width:1320px; }
-.chapter-line { width:160px; height:2px; background:var(--accent); margin-top:20px; }
 
 .scene-grid { flex:1; display:grid; grid-template-columns: .9fr 1.1fr; gap:80px; align-items:center; margin-top:36px; }
 .message { font-size:72px; line-height:1.14; letter-spacing:-1.44px; font-weight:800; max-width:760px; }
 .caption { margin-top:40px; font-size:28px; line-height:1.55; color:var(--gray-600); max-width:760px; }
+.content--visual { justify-content:center; margin-top:20px; }
+.content--visual .visual-stage { min-height:600px; }
 .visual-stage {
   min-height:620px; border:1px solid var(--border); border-radius:var(--r-lg);
   background:var(--surface-2); padding:44px; position:relative; overflow:hidden;
   display:flex; flex-direction:column; justify-content:center; gap:28px;
 }
+.visual-stage--tools {
+  min-height:600px;
+  border:0;
+  background:transparent;
+  padding:0;
+}
+.visual-stage--tools::before { display:none; }
+.visual-stage--typing {
+  align-items:center;
+  justify-content:center;
+}
+.visual-stage--typing::before { display:none; }
+.typing-line {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  white-space:nowrap;
+  opacity:0;
+  color:currentColor;
+  font-size:56px;
+  line-height:1.2;
+  font-weight:800;
+}
+.typing-line__prompt,
+.typing-line__answer {
+  display:inline-block;
+  overflow:hidden;
+  white-space:nowrap;
+  width:0;
+}
+.typing-line__prompt { border-right:3px solid currentColor; }
+.typing-line__answer {
+  color:#0969ff;
+  border-right:3px solid currentColor;
+  opacity:0;
+  margin-left:.22em;
+}
+.slide.active .typing-line {
+  animation:typing-line-visible .01s linear .6s forwards;
+}
+.slide.active .typing-line__prompt {
+  animation:
+    typing-prompt 1.35s steps(9, end) .6s forwards,
+    typing-caret .8s step-end .6s 3 forwards;
+}
+.slide.active .typing-line.show-answer .typing-line__prompt {
+  animation:none;
+  width:auto;
+  border-right:0;
+  overflow:visible;
+}
+.slide.active .typing-line.show-answer .typing-line__answer {
+  animation:
+    typing-answer .55s steps(2, end) forwards,
+    typing-caret .8s step-end infinite;
+}
+.typing-line.backspacing .typing-line__prompt,
+.typing-line.backspacing .typing-line__answer {
+  animation:none;
+  border-right:0;
+  width:0;
+  opacity:0;
+  overflow:hidden;
+  transition:width .72s steps(11, end), opacity .18s ease .54s;
+}
+.typing-line.backspacing .typing-line__answer {
+  transition:width .36s steps(2, end), opacity .14s ease .22s;
+}
+.typing-line.typing-second .typing-line__prompt {
+  color:#000;
+  opacity:1;
+  border-right:3px solid currentColor;
+  animation:
+    typing-second-prompt 1.45s steps(18, end) forwards,
+    typing-caret .8s step-end 4 forwards;
+}
+.typing-line.typing-second.show-second-answer .typing-line__prompt {
+  animation:none;
+  width:auto;
+  border-right:0;
+  overflow:visible;
+}
+.typing-line.typing-second.show-second-answer .typing-line__answer {
+  color:#0969ff;
+  animation:
+    typing-second-answer .72s steps(4, end) forwards,
+    typing-caret .8s step-end infinite;
+}
+.typing-line.typing-second.second-answer-done .typing-line__answer {
+  animation:none;
+  opacity:1;
+  width:auto;
+  border-right:0;
+  overflow:visible;
+}
+@keyframes typing-line-visible {
+  to { opacity:1; }
+}
+@keyframes typing-prompt {
+  to { width:7.15em; }
+}
+@keyframes typing-answer {
+  0% { opacity:1; width:0; }
+  100% { opacity:1; width:2.2em; }
+}
+@keyframes typing-second-prompt {
+  from { width:0; }
+  to { width:var(--typing-second-prompt-width, 15.3em); }
+}
+@keyframes typing-second-answer {
+  0% { opacity:1; width:0; }
+  100% { opacity:1; width:3.35em; }
+}
+@keyframes typing-caret {
+  50% { border-color:transparent; }
+}
+.slide--typingOnly .typing-line {
+  opacity:1;
+  animation:none;
+}
+.slide--typingOnly .typing-line__prompt,
+.slide--typingOnly .typing-line__answer,
+.slide--typingOnly.active .typing-line__prompt,
+.slide--typingOnly.active .typing-line__answer {
+  width:auto;
+  opacity:1;
+  overflow:visible;
+  border-right:0;
+  animation:none;
+}
+.slide--typingOnly .typing-line__prompt.has-cursor,
+.slide--typingOnly .typing-line__answer.has-cursor {
+  border-right:3px solid currentColor;
+  animation:typing-caret .8s step-end infinite;
+}
+.tool-cloud {
+  position:relative; z-index:1; width:82%; min-height:500px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between; gap:28px;
+  transition:opacity 1.1s cubic-bezier(.22,1,.36,1);
+}
+.tool-icon {
+  width:180px; height:180px; border-radius:32px;
+  border:0; background:transparent;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  opacity:0; transform:translateY(10px) scale(.96);
+}
+.slide.active .tool-icon { animation:tool-dissolve .55s ease forwards; }
+.slide.active .tool-icon:nth-child(1) { animation-delay:.42s; }
+.slide.active .tool-icon:nth-child(2) { animation-delay:.85s; }
+.slide.active .tool-icon:nth-child(3) { animation-delay:1.28s; }
+.slide.active .tool-icon:nth-child(4) { animation-delay:1.71s; }
+.slide.active .tool-icon:nth-child(5) { animation-delay:2.14s; }
+@keyframes tool-dissolve {
+  to { opacity:1; transform:translateY(0) scale(1); }
+}
+.tool-logo { width:96px; height:96px; object-fit:contain; display:block; }
+.tool-question {
+  position:absolute; left:0; right:0; top:50%; z-index:2;
+  color:var(--text); font-size:36px; line-height:1.35; font-weight:800; text-align:center;
+  transform:translateY(-50%);
+}
+.visual-stage--tools.has-question .tool-cloud { opacity:.2; }
+.tool-question span {
+  display:block; opacity:0; transform:translateY(8px);
+  transition:opacity .55s ease, transform .55s ease;
+}
+.tool-question.is-visible span { opacity:1; transform:translateY(0); }
 .visual-stage::before {
   content:''; position:absolute; inset:44px; border:1px solid var(--outline);
   border-radius:var(--r-md); pointer-events:none;
@@ -147,6 +555,148 @@ body {
 .circle-list li { font-size:24px; line-height:1.45; color:var(--text); }
 .asis-arrow { color:var(--accent); display:flex; align-items:center; justify-content:center; }
 
+.talk-flow {
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:36px; align-items:stretch;
+  width:100%;
+}
+.talk-step {
+  min-height:260px; border-top:2px solid rgba(255,255,255,.24);
+  padding-top:28px; display:flex; flex-direction:column; gap:20px;
+}
+.talk-step-num { font-size:22px; color:var(--accent); font-weight:800; }
+.talk-step-title { font-size:32px; line-height:1.22; font-weight:800; }
+.talk-step-desc { font-size:22px; line-height:1.55; color:var(--gray-600); max-width:360px; }
+
+.slide--centerMessage {
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  gap:24px;
+}
+.slide--centerMessage::before {
+  content:'';
+  position:absolute; inset:0;
+  background:url('../assets/generated/workflow-desk.png') center/cover no-repeat;
+  opacity:0; transform:scale(1.03);
+  transition:opacity 1.35s ease 1.85s, transform 1.35s cubic-bezier(.22,1,.36,1) 1.85s;
+  pointer-events:none;
+}
+.slide--centerMessage.active::before {
+  opacity:.2; transform:scale(1);
+}
+.slide--centerMessage .title,
+.slide--centerMessage .sub {
+  position:relative;
+  z-index:1;
+  opacity:0;
+  transform:translateY(12px);
+}
+.slide--centerMessage .sub {
+  max-width:980px;
+  margin-top:0;
+}
+.slide--centerMessage.active .title {
+  animation:center-message-in .65s cubic-bezier(.22,1,.36,1) .6s forwards;
+}
+.slide--centerMessage.active .sub {
+  animation:center-message-in .65s cubic-bezier(.22,1,.36,1) 1.15s forwards;
+}
+@keyframes center-message-in {
+  to { opacity:1; transform:translateY(0); }
+}
+
+.noise-board {
+  position:relative; width:100%; min-height:560px; overflow:hidden;
+}
+.noise-bubble-layer {
+  position:absolute; inset:0; z-index:1;
+  transition:opacity 1.1s cubic-bezier(.22,1,.36,1);
+}
+.noise-board.show-images .noise-bubble-layer { opacity:.2; }
+.noise-board::before {
+  content:''; position:absolute; inset:0; z-index:4;
+  background:rgba(0,0,0,.78); opacity:0; pointer-events:none;
+  transition:opacity 1.1s cubic-bezier(.22,1,.36,1);
+}
+.noise-board.show-message::before {
+  opacity:1;
+}
+.noise-bubble {
+  position:absolute; max-width:320px; padding:16px 20px; border-radius:24px;
+  color:#fff; background:#2b2b2b; border:1px solid #4a4a4a; opacity:0;
+  font-size:19px; line-height:1.35; font-weight:700; white-space:normal; overflow-wrap:anywhere;
+  --bubble-x:0px; --bubble-y:14px; --bubble-delay:0s;
+  transform:translate(var(--bubble-x), var(--bubble-y)) scale(.96);
+  isolation:isolate;
+}
+.slide.active .noise-bubble {
+  animation:bubble-scatter-in .72s cubic-bezier(.22,1,.36,1) forwards;
+  animation-delay:var(--bubble-delay);
+}
+.noise-bubble::after {
+  content:''; position:absolute; width:18px; height:18px; left:30px; bottom:-9px;
+  background:#2b2b2b; border-right:1px solid #4a4a4a; border-bottom:1px solid #4a4a4a;
+  transform:rotate(45deg); border-bottom-right-radius:4px; z-index:-1;
+}
+.noise-bubble:nth-child(even)::after { left:auto; right:28px; }
+.noise-bubble:nth-child(1) { left:2%; top:6%; --bubble-delay:.12s; }
+.noise-bubble:nth-child(2) { left:30%; top:1%; --bubble-delay:.82s; }
+.noise-bubble:nth-child(3) { right:6%; top:8%; --bubble-delay:.18s; }
+.noise-bubble:nth-child(4) { left:14%; top:22%; --bubble-delay:1.38s; }
+.noise-bubble:nth-child(5) { right:31%; top:22%; --bubble-delay:.9s; }
+.noise-bubble:nth-child(6) { right:2%; top:29%; --bubble-delay:1.86s; }
+.noise-bubble:nth-child(7) { left:4%; top:43%; --bubble-delay:.28s; }
+.noise-bubble:nth-child(8) { left:35%; top:41%; --bubble-delay:1.44s; }
+.noise-bubble:nth-child(9) { right:15%; top:47%; --bubble-delay:1.96s; }
+.noise-bubble:nth-child(10) { left:18%; bottom:18%; --bubble-delay:.98s; }
+.noise-bubble:nth-child(11) { right:34%; bottom:21%; --bubble-delay:1.52s; }
+.noise-bubble:nth-child(12) { right:1%; bottom:17%; --bubble-delay:.36s; }
+.noise-bubble:nth-child(13) { left:1%; bottom:3%; --bubble-delay:2.04s; }
+.noise-bubble:nth-child(14) { left:30%; bottom:2%; --bubble-delay:.46s; }
+.noise-bubble:nth-child(15) { right:28%; bottom:3%; --bubble-delay:1.6s; }
+.noise-bubble:nth-child(16) { right:2%; bottom:1%; --bubble-delay:1.06s; }
+.noise-bubble:nth-child(17) { left:52%; top:10%; --bubble-delay:1.68s; }
+.noise-bubble:nth-child(18) { left:50%; bottom:41%; --bubble-delay:2.12s; }
+@keyframes bubble-scatter-in {
+  to { opacity:1; transform:translate(0, 0) scale(1); }
+}
+.noise-image-layer {
+  position:absolute; inset:0; z-index:3; pointer-events:none;
+}
+.noise-image {
+  position:absolute; width:360px; max-height:230px; object-fit:cover;
+  border-radius:8px; border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 24px 70px rgba(0,0,0,.5);
+  --image-delay:0s; --image-rotate:0deg;
+  opacity:0; transform:translateY(18px) scale(.96);
+}
+.noise-board.show-images .noise-image {
+  animation:noise-image-in .58s cubic-bezier(.22,1,.36,1) forwards;
+  animation-delay:var(--image-delay);
+}
+.noise-image:nth-child(1) { left:6%; top:4%; --image-rotate:-5deg; --image-delay:.08s; transform:translateY(18px) scale(.96) rotate(var(--image-rotate)); }
+.noise-image:nth-child(2) { left:35%; top:0; width:390px; --image-rotate:3deg; --image-delay:.32s; transform:translateY(18px) scale(.96) rotate(var(--image-rotate)); }
+.noise-image:nth-child(3) { right:4%; top:8%; width:340px; --image-rotate:-2deg; --image-delay:.6s; transform:translateY(18px) scale(.96) rotate(var(--image-rotate)); }
+.noise-image:nth-child(4) { left:18%; top:35%; width:370px; --image-rotate:4deg; --image-delay:.88s; transform:translateY(18px) scale(.96) rotate(var(--image-rotate)); }
+.noise-image:nth-child(5) { right:22%; top:31%; width:400px; --image-rotate:-4deg; --image-delay:1.14s; transform:translateY(18px) scale(.96) rotate(var(--image-rotate)); }
+.noise-image:nth-child(6) { left:4%; bottom:1%; width:390px; --image-rotate:2deg; --image-delay:1.42s; transform:translateY(18px) scale(.96) rotate(var(--image-rotate)); }
+.noise-image:nth-child(7) { right:5%; bottom:0; width:380px; --image-rotate:5deg; --image-delay:1.72s; transform:translateY(18px) scale(.96) rotate(var(--image-rotate)); }
+.noise-image:nth-child(8) { left:38%; bottom:0; width:360px; --image-rotate:-3deg; --image-delay:1.3s; transform:translateY(18px) scale(.96) rotate(var(--image-rotate)); }
+.noise-image:nth-child(9) { right:13%; top:50%; width:340px; --image-rotate:3deg; --image-delay:1.56s; transform:translateY(18px) scale(.96) rotate(var(--image-rotate)); }
+@keyframes noise-image-in {
+  to { opacity:.96; transform:translateY(0) scale(1) rotate(var(--image-rotate, 0deg)); }
+}
+.noise-message {
+  position:absolute; left:0; right:0; top:50%; z-index:5;
+  color:var(--text); font-size:36px; line-height:1.35; font-weight:800;
+  text-align:center; opacity:0; transform:translateY(calc(-50% + 12px));
+  transition:opacity .55s ease, transform .55s ease;
+  pointer-events:none;
+}
+.noise-board.show-message .noise-message {
+  opacity:1; transform:translateY(-50%);
+}
+
 .structure-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
 .structure-card {
   min-height:190px; border:1px solid var(--text); border-radius:var(--r-lg);
@@ -207,13 +757,240 @@ tbody tr:last-child td { border-bottom:0; }
 .system-node span { font-size:22px; line-height:1.45; color:var(--gray-600); }
 .system-node.accent-node { border:2px solid var(--accent); }
 
+.scene-canvas {
+  position:relative; flex:1; min-height:560px; display:flex; align-items:center; justify-content:center;
+}
+.scene-word {
+  font-size:72px; line-height:1.12; font-weight:800; letter-spacing:0; white-space:nowrap;
+}
+.scene-muted { color:rgba(255,255,255,.28); }
+.scene-accent { color:var(--accent); }
+.reveal-item {
+  opacity:0; transform:translateY(14px);
+  transition:opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1), filter .7s ease;
+  transition-delay:var(--d, 0s);
+}
+.step-reveal.is-revealed .reveal-item,
+.step-reveal.is-complete .reveal-item {
+  opacity:1; transform:translateY(0);
+}
+.word-cluster {
+  position:relative; width:100%; height:560px; display:flex; align-items:center; justify-content:center;
+}
+.word-cluster__center {
+  position:absolute; font-size:64px; font-weight:800; transition:transform .8s cubic-bezier(.22,1,.36,1), opacity .8s ease;
+}
+.word-cluster__word {
+  position:absolute; font-size:52px; font-weight:800; color:var(--accent);
+  opacity:0; transform:translate(-50%, -50%) scale(.92);
+  transition:opacity .7s ease, transform .7s cubic-bezier(.22,1,.36,1);
+  transition-delay:var(--d);
+}
+.word-cluster__word:nth-child(2) { left:28%; top:50%; }
+.word-cluster__word:nth-child(3) { left:50%; top:24%; }
+.word-cluster__word:nth-child(4) { left:72%; top:50%; }
+.word-cluster__word:nth-child(5) { left:50%; top:76%; }
+.word-cluster.is-revealed .word-cluster__center { transform:scale(.72); opacity:.34; }
+.word-cluster.is-revealed .word-cluster__word { opacity:1; transform:translate(-50%, -50%) scale(1); }
+.flow-compare {
+  width:100%; display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
+}
+.flow-panel {
+  min-height:410px; border:1px solid rgba(255,255,255,.14); padding:48px; display:flex; flex-direction:column; justify-content:center; gap:28px;
+}
+.flow-panel__label { font-size:22px; font-weight:800; color:var(--accent); letter-spacing:.05em; text-transform:uppercase; }
+.flow-panel__steps { display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap; }
+.flow-chip {
+  min-width:130px; padding:18px 22px; border:1px solid rgba(255,255,255,.2);
+  font-size:26px; font-weight:800; text-align:center;
+}
+.flow-arrow { color:rgba(255,255,255,.32); font-size:28px; font-weight:800; }
+.flow-compare.is-revealed .flow-panel--left { opacity:.2; filter:blur(.3px); }
+.flow-panel--right { opacity:.3; transition:opacity .9s ease; }
+.flow-compare.is-revealed .flow-panel--right { opacity:1; }
+.simple-chain { display:flex; align-items:center; justify-content:center; gap:28px; width:100%; }
+.simple-chain .flow-chip { font-size:36px; min-width:190px; padding:28px; }
+.linear-stages {
+  position:relative; width:100%; height:480px; display:flex; align-items:center; justify-content:space-between;
+}
+.linear-stages::before {
+  content:''; position:absolute; left:60px; right:60px; top:50%; height:1px; background:rgba(255,255,255,.22);
+}
+.stage-node {
+  position:relative; z-index:1; width:180px; height:180px; border-radius:50%; border:1px solid rgba(255,255,255,.2);
+  display:flex; align-items:center; justify-content:center; text-align:center; font-size:24px; font-weight:800;
+  background:#000;
+}
+.linear-stages.is-revealed::after {
+  content:'AI'; position:absolute; left:44px; right:44px; top:calc(50% - 36px); height:72px;
+  border:1px solid var(--accent); color:var(--accent); display:flex; align-items:center; justify-content:center;
+  font-size:24px; font-weight:800; opacity:.72; pointer-events:none;
+}
+.partner-board, .harness-map {
+  position:relative; width:100%; height:560px; display:flex; align-items:center; justify-content:center;
+}
+.board-shell {
+  width:720px; height:360px; border:1px solid rgba(255,255,255,.18); padding:40px;
+  display:grid; grid-template-columns:repeat(2, 1fr); gap:22px;
+}
+.board-node {
+  border:1px solid rgba(255,255,255,.16); display:flex; align-items:center; justify-content:center;
+  font-size:28px; font-weight:800;
+}
+.chat-dot {
+  position:absolute; left:190px; top:230px; border:1px solid rgba(255,255,255,.2);
+  padding:22px 28px; font-size:28px; font-weight:800; background:#000;
+  transition:transform .9s cubic-bezier(.22,1,.36,1), opacity .9s ease;
+}
+.partner-board.is-revealed .chat-dot { transform:translate(460px, 40px); color:var(--accent); border-color:var(--accent); }
+.harness-map__pair {
+  position:absolute; top:155px; font-size:64px; font-weight:800;
+}
+.harness-map__pair.left { left:280px; }
+.harness-map__pair.right { right:230px; }
+.harness-map__line {
+  position:absolute; left:570px; right:570px; top:205px; height:2px; background:var(--accent);
+  transform:scaleX(0); transform-origin:center; transition:transform .7s cubic-bezier(.22,1,.36,1);
+}
+.harness-map.is-revealed .harness-map__line { transform:scaleX(1); }
+.harness-label {
+  position:absolute; top:170px; left:50%; transform:translateX(-50%); color:var(--accent); font-size:28px; font-weight:800;
+  opacity:0; transition:opacity .7s ease .35s;
+}
+.harness-map.is-revealed .harness-label { opacity:1; }
+.harness-spokes {
+  position:absolute; bottom:80px; left:0; right:0; display:flex; justify-content:center; gap:20px;
+}
+.module-split {
+  width:100%; display:grid; grid-template-columns:1fr 1.2fr; gap:80px; align-items:center;
+}
+.heavy-doc {
+  height:430px; border:1px solid rgba(255,255,255,.18); padding:28px; overflow:hidden; opacity:.86;
+}
+.doc-line { height:12px; background:rgba(255,255,255,.32); margin-bottom:16px; }
+.doc-line:nth-child(3n) { width:74%; }
+.doc-line:nth-child(4n) { width:92%; }
+.module-list { display:flex; flex-wrap:wrap; gap:18px; }
+.module-split.is-revealed .heavy-doc { opacity:.2; }
+.module-card {
+  padding:24px 28px; border:1px solid rgba(255,255,255,.2); font-size:30px; font-weight:800;
+}
+.plain-center {
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:28px;
+}
+.plain-center::before {
+  content:''; position:absolute; inset:0; background:var(--center-bg) center/cover no-repeat;
+  opacity:0; transform:scale(1.03); transition:opacity 1.3s ease .95s, transform 1.3s ease .95s;
+}
+.slide.active .plain-center::before { opacity:.2; transform:scale(1); }
+.plain-center > * { position:relative; z-index:1; opacity:0; transform:translateY(12px); animation:center-message-in .65s cubic-bezier(.22,1,.36,1) forwards; }
+.plain-center .scene-word { animation-delay:.6s; }
+.plain-center .sub { animation-delay:1.05s; margin:0; }
+.tag-scatter { position:relative; width:100%; height:540px; }
+.scatter-tag {
+  position:absolute; padding:18px 24px; border:1px solid rgba(255,255,255,.18);
+  font-size:28px; font-weight:800; background:#000;
+}
+.scatter-tag:nth-child(1) { left:8%; top:12%; --d:.1s; }
+.scatter-tag:nth-child(2) { right:12%; top:8%; --d:.35s; }
+.scatter-tag:nth-child(3) { left:34%; top:42%; --d:.58s; color:var(--accent); }
+.scatter-tag:nth-child(4) { left:12%; bottom:10%; --d:.82s; }
+.scatter-tag:nth-child(5) { right:8%; bottom:18%; --d:1.02s; }
+.prompt-stack { display:flex; flex-direction:column; gap:18px; width:100%; max-width:1180px; }
+.prompt-line {
+  border-left:3px solid var(--accent); padding:22px 28px; background:rgba(255,255,255,.04);
+  font-size:30px; line-height:1.35; font-weight:800;
+}
+.loop-cycle { position:relative; width:560px; height:560px; border:1px solid rgba(255,255,255,.2); border-radius:50%; }
+.loop-step {
+  position:absolute; width:170px; height:78px; border:1px solid rgba(255,255,255,.2); background:#000;
+  display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800;
+}
+.loop-step:nth-child(1) { left:195px; top:-39px; }
+.loop-step:nth-child(2) { right:-85px; top:241px; }
+.loop-step:nth-child(3) { left:195px; bottom:-39px; }
+.loop-step:nth-child(4) { left:-85px; top:241px; }
+.folder-map {
+  position:relative; width:100%; max-width:1120px; display:grid; grid-template-columns:repeat(3, 1fr); gap:18px;
+}
+.folder-node {
+  min-height:118px; border:1px solid rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center;
+  font-size:32px; font-weight:800; background:rgba(255,255,255,.03);
+}
+.folder-map.is-revealed::after {
+  content:'Harness'; position:absolute; inset:-34px; border:2px solid var(--accent);
+  display:flex; align-items:flex-end; justify-content:flex-end; padding:18px; color:var(--accent); font-size:22px; font-weight:800;
+}
+.doc-weight { width:820px; height:500px; border:1px solid rgba(255,255,255,.18); padding:36px; overflow:hidden; }
+.doc-weight .doc-line { height:10px; opacity:0; animation:doc-line-in .35s ease forwards; animation-delay:var(--d); }
+@keyframes doc-line-in { to { opacity:1; } }
+.qa-list { display:grid; grid-template-columns:repeat(2, 1fr); gap:18px; width:100%; max-width:1040px; }
+.qa-item {
+  padding:28px; border:1px solid rgba(255,255,255,.18); font-size:30px; font-weight:800;
+}
+.qa-rules.is-revealed .qa-item { border-color:var(--accent); }
+.qa-rules.is-revealed .qa-item::before { content:'✓ '; color:var(--accent); }
+.model-shift, .less-control, .word-swap, .flow-only, .extract-flow, .three-tools, .customize, .grow-lines {
+  width:100%; min-height:520px; display:flex; align-items:center; justify-content:center;
+}
+.model-card {
+  width:360px; height:220px; border:1px solid rgba(255,255,255,.18);
+  display:flex; align-items:center; justify-content:center; font-size:42px; font-weight:800;
+}
+.model-shift .flow-arrow { margin:0 60px; }
+.model-shift.is-revealed .model-card:first-child { opacity:.22; }
+.model-shift.is-revealed .model-card:last-child { color:var(--accent); border-color:var(--accent); }
+.less-control { gap:52px; }
+.control-card {
+  width:460px; height:300px; border:1px solid rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center;
+  font-size:38px; font-weight:800;
+}
+.less-control.is-revealed .control-card:first-child { opacity:.18; }
+.less-control.is-revealed .control-card:last-child { border-color:var(--accent); color:var(--accent); }
+.swap-word { font-size:88px; font-weight:800; transition:opacity .7s ease, transform .7s ease; }
+.word-swap .after { position:absolute; opacity:0; color:var(--accent); transform:translateY(18px); }
+.word-swap.is-revealed .before { opacity:0; transform:translateY(-18px); }
+.word-swap.is-revealed .after { opacity:1; transform:translateY(0); }
+.flow-only { flex-direction:column; gap:44px; }
+.faded-row { display:flex; gap:34px; color:rgba(255,255,255,.28); font-size:32px; font-weight:800; transition:opacity .7s ease; }
+.flow-only.is-revealed .faded-row { opacity:.18; }
+.flow-focus { font-size:84px; font-weight:800; color:var(--accent); opacity:0; transform:translateY(16px); transition:.7s ease; }
+.flow-only.is-revealed .flow-focus { opacity:1; transform:translateY(0); }
+.extract-flow { gap:18px; }
+.extract-chip { padding:22px 28px; border:1px solid rgba(255,255,255,.18); font-size:28px; font-weight:800; }
+.extract-chip:last-child { color:var(--accent); border-color:var(--accent); }
+.noise-advice { position:relative; width:100%; height:520px; }
+.noise-advice.is-revealed .scatter-tag { opacity:.12; }
+.noise-advice__message {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:48px; font-weight:800;
+  opacity:0; transform:translateY(12px); transition:.7s ease;
+}
+.noise-advice.is-revealed .noise-advice__message { opacity:1; transform:translateY(0); }
+.three-tools { gap:24px; }
+.tool-card {
+  width:340px; min-height:250px; border:1px solid rgba(255,255,255,.18); padding:32px; display:flex; flex-direction:column; justify-content:center; gap:22px;
+}
+.tool-card strong { font-size:34px; }
+.tool-card span { font-size:22px; line-height:1.45; color:var(--gray-600); }
+.customize { flex-direction:column; gap:18px; }
+.custom-pair { display:flex; align-items:center; gap:22px; font-size:34px; font-weight:800; }
+.custom-pair span:last-child { color:var(--accent); }
+.grow-lines { position:relative; }
+.grow-box {
+  width:560px; height:320px; border:1px solid rgba(255,255,255,.2); position:relative;
+}
+.grow-box::before, .grow-box::after {
+  content:''; position:absolute; left:50%; top:50%; width:0; height:1px; background:var(--accent);
+  transition:width 1s cubic-bezier(.22,1,.36,1);
+}
+.grow-box::after { transform:rotate(90deg); transform-origin:left; }
+.grow-lines.is-revealed .grow-box::before,
+.grow-lines.is-revealed .grow-box::after { width:420px; }
+
 .slide--closing { align-items:center; justify-content:center; text-align:center; }
 .slide--closing .message { max-width:1180px; font-size:72px; }
 .slide--closing .caption { max-width:820px; }
-.progress {
-  position:fixed; left:0; top:0; height:3px; width:0; background:var(--accent);
-  z-index:20; transition:width .2s ease;
-}
 .hint {
   position:fixed; left:24px; bottom:20px; z-index:20; color:rgba(255,255,255,.28);
   font-size:14px; letter-spacing:.04em;
@@ -224,7 +1001,6 @@ tbody tr:last-child td { border-bottom:0; }
 </style>
 </head>
 <body>
-<div class="progress" id="progress"></div>
 <div class="hint">← → / Space</div>
 <main class="deck-wrapper" id="deck">
   <section class="slide slide--cover active" data-hide-counter>
@@ -235,16 +1011,14 @@ tbody tr:last-child td { border-bottom:0; }
   </section>
   <section class="slide slide--toc">
     <div class="toc-left">
-      <div class="eyebrow">Contents</div>
       <h2 class="title">AI를 도구가 아니라<br>작업 흐름으로 이해하기</h2>
-      <p class="sub">한 슬라이드에 하나의 메시지만 남기고, 9개의 챕터로 LLM과 Harness의 감각을 따라갑니다.</p>
     </div>
     <div class="toc-right" id="toc"></div>
   </section>
 </main>
 <script>
 const chapters = [
-  '왜 AI를 써도 생산성이 다를까',
+  '왜 같은 AI를 써도 생산성이 다를까',
   'LLM은 어떻게 동작하는가',
   'AI는 검색창이 아니다',
   'Harness란 무엇인가',
@@ -256,92 +1030,86 @@ const chapters = [
 ];
 
 const slides = [
-  { chapter:1, msg:'왜 어떤 사람은<br>생산성이 폭발할까?', visual:'수많은 AI 툴 로고들이 떠다니는 화면, 가운데 멈춰있는 사람 실루엣', cap:'같은 AI를 써도 결과는 완전히 달라집니다.', image:'../assets/generated/info-overload.png' },
-  { chapter:1, type:'compare', msg:'중요한 건<br>툴 자체가 아닙니다.', cap:'생산성 차이는 workflow에서 시작됩니다.', left:{label:'AS-IS', head:'도구를 많이 쓰는 사람', items:['질문 하나, 답변 하나', '툴마다 맥락이 끊김', '결과를 다시 정리해야 함']}, right:{label:'TO-BE', head:'흐름에 연결하는 사람', items:['리서치부터 QA까지 연결', '반복 패턴이 쌓임', '작업 자체가 시스템이 됨']} },
-  { chapter:1, msg:'AI를 얼마나<br>많이 쓰느냐보다', visual:'여러 AI 창을 동시에 띄운 혼란스러운 화면', cap:'많이 쓰는 것과 잘 연결하는 것은 다릅니다.', chips:['More tabs','More chats','More tools','More noise'] },
-  { chapter:1, msg:'내 작업 흐름 안에<br>어떻게 녹여냈는가', visual:'Research → Design → Code → QA 연결 다이어그램', cap:'AI는 workflow 안에 들어올 때 강해집니다.', image:'../assets/generated/workflow-desk.png' },
-  { chapter:2, msg:'LLM은 다음 말을<br>예측하는 모델입니다.', visual:'자동완성 UI 느낌, 텍스트가 한 글자씩 완성되는 장면', cap:'현재 문맥에서 가장 가능성 높은 다음 단어를 예측합니다.', chips:['Context','Prediction','Token','Next word'] },
-  { chapter:2, msg:'대한민국의<br>수도는…', visual:'텍스트만 크게, 커서 blinking', cap:'우리는 자연스럽게 다음 단어를 예상합니다.', chips:['대한민국의','수도는','...'] },
-  { chapter:2, msg:'서울', visual:'매우 단순한 타이포 슬라이드', cap:'LLM도 비슷한 방식으로 동작합니다.', chips:['서울'], accent:'서울' },
-  { chapter:2, msg:'규모가 커지면<br>추론처럼 보이기 시작합니다.', visual:'작은 점들이 거대한 네트워크가 되는 장면', cap:'엄청난 양의 패턴이 연결되기 시작합니다.', bars:[['Pattern',35],['Scale',68],['Emergence',92]] },
-  { chapter:2, msg:'검색 도구가 아니라<br>작업 인터페이스가 됩니다.', visual:'채팅창이 workflow 허브처럼 변하는 UI', cap:'AI는 점점 함께 작업하는 형태로 진화하고 있습니다.', flow:['Ask','Plan','Make','Review'] },
-  { chapter:3, msg:'많은 사람들은 AI를<br>검색창처럼 사용합니다.', visual:'질문 → 답변 → 종료 구조', cap:'질문 하나, 답변 하나로 끝나는 방식.', flow:['Question','Answer','End'] },
-  { chapter:3, msg:'하지만 생산성이<br>올라가는 순간은 다릅니다.', visual:'workflow 안으로 AI가 스며드는 장면', cap:'AI가 작업 흐름 안에 들어오기 시작합니다.', image:'../assets/generated/workflow-desk.png' },
-  { chapter:3, type:'timeline', msg:'AI는 작업 흐름<br>전체에 들어옵니다.', cap:'리서치, 구조화, 디자인, 구현, QA가 하나의 흐름으로 이어질 때 생산성이 올라갑니다.', stages:[
-    {label:'Stage 1', name:'Research', bullets:['자료 조사', '출처 비교', '인사이트 추출']},
-    {label:'Stage 2', name:'Structure', bullets:['흩어진 생각 정리', '목차와 흐름 구성', '핵심 주장 고정']},
-    {label:'Stage 3', name:'Design', bullets:['화면 방향 탐색', '레이아웃 변형', '톤앤매너 점검']},
-    {label:'Stage 4', name:'Code & QA', bullets:['구현', '검수', '수정 반복']}
+  { chapter:1, msg:'다양한 AI툴의 등장', cap:'', tools:['ChatGPT','Claude','Cursor','Gemini','Perplexity'] },
+  { chapter:1, type:'infoNoise', msg:'미디어 속에서 넘쳐나는 AI 정보', cap:'도데체 무슨 말인지 하나도 모르겠네...', bubbles:[
+    'Codex 5.5로 넘어옴',
+    '여전히 Opus가 최고임',
+    '이번 구글 I/O에 Gemini 3.5 Flash가 나왔대',
+    'Openclaw 하셈',
+    '맥미니 아직도 안삼?',
+    'MCP 안 쓰면 뒤처짐',
+    '이제 프롬프트 엔지니어링 끝났대',
+    'Agentic workflow가 답임',
+    '오늘부터 전부 로컬 LLM으로 갈아타야 함',
+    'Cursor 룰 파일 다시 짜야 함',
+    'Perplexity Spaces 써봄?',
+    'Claude Projects가 진짜임',
+    'GPT-5.5 벤치 봤음?',
+    'NotebookLM으로 다 정리됨',
+    'Deep Research만 믿으면 됨',
+    '로컬 에이전트가 다음임',
+    '프롬프트 말고 컨텍스트임',
+    '디자인도 이제 자동화래'
   ] },
-  { chapter:4, msg:'저는 이 구조를<br>Harness라고 생각합니다.', visual:'로프와 장비가 연결되는 장면', cap:'AI와 workflow를 연결하는 구조.', chips:['Human','AI','Workflow','Harness'], accent:'Harness' },
-  { chapter:4, type:'structureGrid', msg:'Harness는 하나의<br>프롬프트가 아닙니다.', cap:'AI가 안정적으로 협업하도록 만드는 작은 구조들이 모여 Harness가 됩니다.', items:[
-    ['Prompt','대화를 시작하는 입력'],
-    ['Rules','반복 실수를 줄이는 기준'],
-    ['Skills','작업 패턴을 기능화'],
-    ['Commands','자주 하는 일을 빠르게 호출'],
-    ['Context','앞뒤 맥락을 잃지 않게 유지'],
-    ['QA','결과를 다시 점검하는 루프']
-  ] },
-  { chapter:4, msg:'하지만 저는 처음부터<br>설계하지 않습니다.', visual:'비어있는 프로젝트 폴더', cap:'처음에는 그냥 만듭니다.', chips:['Empty folder','First draft','No perfect system'] },
-  { chapter:5, msg:'LLM은 야생말과<br>비슷합니다.', visual:'초원을 달리는 야생마', cap:'강력하지만 아직 다루기 어렵습니다.', image:'../assets/generated/wild-horse.png' },
-  { chapter:5, msg:'처음부터 완벽한 마구를<br>만들 수는 없습니다.', visual:'맞지 않는 거대한 안장을 얹은 말', cap:'무엇이 필요한지 먼저 경험해야 합니다.', chips:['Too many rules','Heavy prompt','Wrong fit'] },
-  { chapter:5, msg:'먼저 부딪혀봅니다.', visual:'어수선한 작업 화면, 에러와 성공이 섞인 장면', cap:'실패와 시행착오가 먼저입니다.', chips:['Try','Break','Learn','Retry'], accent:'Try' },
-  { chapter:5, msg:'들이받혀보기도 하고', visual:'hallucination / 이상한 결과물', cap:'예상 밖의 결과를 경험합니다.', chips:['Hallucination','Wrong context','Odd output'] },
-  { chapter:5, msg:'뒷발질도 당해보고', visual:'context overflow, error explosion', cap:'잘 되다가 갑자기 무너지기도 합니다.', chips:['Overflow','Regression','Error'] },
-  { chapter:5, msg:'도망가는 걸<br>잡으러 가보기도 합니다.', visual:'사라진 context를 따라가는 느낌', cap:'원인을 찾고 다시 정리합니다.', chips:['Lost context','Trace','Recover'] },
-  { chapter:5, msg:'뭘 좋아하는지도<br>살펴봅니다.', visual:'모델별 성향 비교 느낌', cap:'모델마다 잘하는 방식이 다릅니다.', bars:[['Planning',82],['Coding',74],['Writing',91],['Visual taste',63]] },
-  { chapter:6, msg:'우선 그냥<br>만들어봅니다.', visual:'messy prototype', cap:'완벽한 구조보다 결과가 먼저입니다.', image:'../assets/generated/workflow-desk.png' },
-  { chapter:6, msg:'실패합니다.', visual:'깨진 UI / 에러 로그', cap:'실패는 workflow를 발견하는 과정입니다.', chips:['Broken UI','Error log','Mismatch'] },
-  { chapter:6, msg:'QA합니다.', visual:'체크리스트와 피드백 메모', cap:'반복적인 문제들이 보이기 시작합니다.', chips:['Checklist','Review','Gap'] },
-  { chapter:6, msg:'해결합니다.', visual:'정리되는 구조', cap:'조금씩 workflow가 안정됩니다.', chips:['Fix','Refine','Stabilize'], accent:'Stabilize' },
-  { chapter:6, type:'timeline', msg:'먼저 만들고,<br>나중에 구조화합니다.', cap:'완벽한 설계보다 결과물을 먼저 만들고, 실패와 QA를 거쳐 반복 패턴을 추출합니다.', stages:[
-    {label:'Stage 1', name:'Build', bullets:['우선 결과물을 만듭니다', '완벽한 구조를 기다리지 않습니다']},
-    {label:'Stage 2', name:'Fail', bullets:['오류와 이상한 답변을 만납니다', '맥락이 끊기는 지점을 봅니다']},
-    {label:'Stage 3', name:'Fix', bullets:['프롬프트와 규칙을 조정합니다', '작동하는 패턴을 남깁니다']},
-    {label:'Stage 4', name:'Review', bullets:['작업 흐름을 다시 적습니다', '반복되는 기준을 분리합니다']}
-  ] },
-  { chapter:6, msg:'반복적인 패턴이<br>보이기 시작합니다.', visual:'반복되는 블록 강조', cap:'반복은 구조를 만듭니다.', chips:['Pattern','Pattern','Pattern'], accent:'Pattern' },
-  { chapter:7, msg:'claude.md는 점점<br>무거워집니다.', visual:'끝없이 길어진 markdown 파일', cap:'규칙은 계속 쌓입니다.', bars:[['Rules',88],['Exceptions',70],['Context',95]] },
-  { chapter:7, msg:'반복 패턴을<br>떼어냅니다.', visual:'거대한 블록이 모듈로 분리되는 장면', cap:'반복되는 작업을 독립시킵니다.', flow:['Big doc','Extract','Module'] },
-  { chapter:7, msg:'Slash Commands', visual:'command palette UI', cap:'자주 사용하는 작업을 빠르게 호출합니다.', chips:['/review','/plan','/ship'], accent:'/plan' },
-  { chapter:7, msg:'Skills', visual:'기능 블록들이 연결되는 구조', cap:'반복되는 패턴을 기능화합니다.', chips:['Brainstorm','Debug','Verify','Write'] },
-  { chapter:7, msg:'Rules', visual:'QA 체크포인트 구조', cap:'계속 실수하는 부분을 구조화합니다.', chips:['Do','Check','Avoid','Repeat'], accent:'Check' },
-  { chapter:7, type:'systemMap', msg:'어느 순간 프로젝트 폴더<br>자체가 Harness가 됩니다.', cap:'반복된 작업이 파일, 규칙, 스킬, 검수 흐름으로 분리되면 폴더 구조 자체가 협업 시스템이 됩니다.', image:'../assets/generated/harness-system.png', nodes:[
-    ['content/','원고, 리서치, 장면 설계'],
-    ['style-kit/','색상, 타이포, 레이아웃 규칙'],
-    ['deck/','실제 결과물과 화면 감각'],
-    ['planning/','의도, 컨셉, 제작 과정'],
-    ['rules','반복 실수를 막는 기준'],
-    ['skills','자주 쓰는 작업 패턴']
-  ] },
-  { chapter:8, msg:'Harness는<br>고정 구조가 아닙니다.', visual:'계속 변형되는 구조물', cap:'workflow가 바뀌면 구조도 바뀝니다.', chips:['Change','Adapt','Refit'] },
-  { chapter:8, msg:'모델이 바뀌면<br>Harness도 바뀝니다.', visual:'old model → new model 진화 장면', cap:'모델 능력이 workflow를 바꾸기 시작합니다.', flow:['Old model','New model','New flow'] },
-  { chapter:8, type:'table', msg:'좋은 Harness는<br>계속 가벼워집니다.', cap:'모델 능력이 바뀌면 Harness의 역할도 바뀝니다. 더 많이 묶는 것보다 덜 방해하는 구조가 중요해집니다.', columns:['구분','예전 방식','지금 고민'], rows:[
-    ['프롬프트','긴 역할 설명과 세부 규칙','필요한 기준만 남김'],
-    ['맥락','모든 정보를 한 번에 넣음','파일과 참조 우선순위를 분리'],
-    ['통제','모델 실수를 막기 위해 강하게 제약','모델 능력을 살리며 검수 루프 강화'],
-    ['업데이트','한 번 만든 규칙을 계속 누적','모델 변화에 맞춰 덜어냄']
-  ] },
-  { chapter:8, msg:'이제는 얼마나<br>덜 방해할 것인가', visual:'가볍고 단순해진 구조', cap:'Harness도 함께 진화합니다.', chips:['Light','Clear','Flexible'], accent:'Light' },
-  { chapter:9, msg:'정보를 전부<br>쫓아가지 마세요.', visual:'쏟아지는 AI 뉴스와 정보', cap:'모든 정보를 따라갈 필요는 없습니다.', image:'../assets/generated/info-overload.png' },
-  { chapter:9, msg:'중요한 건 무엇을<br>만들고 싶은가입니다.', visual:'빈 캔버스 앞의 디자이너', cap:'필요한 정보는 결과물에서 시작됩니다.', chips:['Make','Need','Learn'], accent:'Make' },
-  { chapter:9, type:'roadmap', msg:'처음에는 세 가지만<br>시작해도 충분합니다.', cap:'작게 시작해서 반복 패턴을 발견하고, 나중에 rules, skills, automation으로 확장하면 됩니다.', active:['Brainstorming','Grill Me','Caveman'], later:['Rules','Skills','Automation','Workflow Kit'] },
-  { chapter:9, msg:'우선 뭐든<br>만들어보세요.', visual:'다시 달리기 시작하는 말', cap:'결과를 만들다 보면 workflow는 자연스럽게 자라납니다.', image:'../assets/generated/wild-horse.png' },
-  { chapter:9, msg:'야생마는 자신의 몸에 맞는<br>마구를 착용하게 됩니다.', visual:'몸에 맞는 장비를 착용한 말, 안정적으로 달리는 장면', cap:'좋은 Harness는 반복된 작업 속에서 자연스럽게 만들어집니다.', image:'../assets/generated/wild-horse.png' },
-  { chapter:9, msg:'감사합니다.', visual:'초원을 달려나가는 말의 뒷모습', cap:'AI와 함께 자신만의 workflow를 만들어보세요.', closing:true }
-];
+  { chapter:1, type:'centerMessage', msg:'AI 툴 소개가 아니라 작업 흐름의 이야기', cap:'LLM을 가볍게 이해하고, 실제 작업에 연결한 뒤, 나만의 하네스와 워크플로우로 정리해봅니다.' },
+  { chapter:2, type:'typingOnly', typingText:'대한민국의 수도는' },
+  { chapter:2, type:'graphView', msg:'LLM은 다음 말을 예측하는 모델입니다.', cap:'엄청난 양의 문장과 패턴이 쌓이면, 단순한 예측이 요약·추론·코드·기획처럼 보이기 시작합니다.' },
+  { chapter:2, type:'wordCluster', msg:'단순 문장 완성을 넘어', cap:'스케일이 커지면 예측은 복합 작업처럼 보이기 시작합니다.', center:'다음 단어', words:['요약','추론','코드','기획'] },
+  { chapter:2, type:'flowCompare', msg:'검색 도구가 아니라<br>작업 인터페이스가 됩니다.', cap:'AI는 점점 함께 작업하는 형태로 진화하고 있습니다.', left:['질문','답변','종료'], right:['Ask','Plan','Make','Review'] },
+  { chapter:3, type:'simpleChain', msg:'질문 하나, 답변 하나, 끝', cap:'많은 사용은 여기서 멈춥니다.', steps:['질문','답변','종료'] },
+  { chapter:3, type:'linearStages', msg:'생산성은 흐름 안에서 올라갑니다', cap:'AI가 각 단계에 들어올 때 작업 방식이 바뀝니다.', stages:['리서치','기획 정리','디자인 방향','코드','문서','QA'] },
+  { chapter:3, type:'partnerBoard', msg:'챗봇이 아니라 작업 파트너', cap:'AI의 위치가 작업 바깥에서 작업판 안으로 이동합니다.', nodes:['리서치','정리','수정','검수'] },
+  { chapter:4, type:'harnessLink', msg:'이 구조를 Harness라고 부릅니다', cap:'AI와 workflow를 안정적으로 연결하는 구조입니다.', nodes:['Context','Rules','Skills','Commands','QA'] },
+  { chapter:4, type:'moduleSplit', msg:'Harness는 프롬프트 하나가 아닙니다', cap:'긴 프롬프트보다 작은 구조들이 함께 작동합니다.', modules:['Rules','Context','Skills','Commands','Review'] },
+  { chapter:4, type:'plainCenter', msg:'처음에는 그냥 만듭니다', cap:'설계보다 먼저 결과', bg:'../assets/generated/workflow-desk.png' },
+  { chapter:5, type:'plainCenter', msg:'LLM은 야생마와 비슷합니다', cap:'강력하지만 먼저 성향을 알아야 합니다.', bg:'../assets/generated/wild-horse.png' },
+  { chapter:5, type:'tagScatter', msg:'먼저 부딪혀봐야 압니다', cap:'모델의 성향은 사용하면서 드러납니다.', tags:['얼마나 빠른지','어디에 예민한지','무엇을 잘하는지','어디서 무너지는지','어떤 입력을 좋아하는지'] },
+  { chapter:5, type:'chaosToLine', msg:'실패가 작업 흐름을 드러냅니다', cap:'혼란은 반복 패턴을 발견하는 재료가 됩니다.', chaos:['에러','실패','엉뚱한 결과','잘 되는 순간'], line:['시도','실패','수정','성공'] },
+  { chapter:6, type:'promptStack', msg:'작업 플로우를 다시 적습니다', cap:'결과를 만든 뒤 AI에게 작업 과정을 정리시킵니다.', prompts:['우리가 어떤 방식으로 작업했는지 정리해줘','반복된 패턴이 뭐였는지 정리해줘','어디서 품질이 좋아졌는지 분석해줘'] },
+  { chapter:6, type:'loopCycle', msg:'반복하면 패턴이 보입니다', cap:'3-4번 반복하면 우연이 workflow로 바뀝니다.', steps:['Build','Review','Extract','Refine'] },
+  { chapter:6, type:'folderMap', msg:'그때부터 Harness가 생깁니다', cap:'반복된 패턴은 파일과 규칙, 스킬로 분리됩니다.', nodes:['rules','skills','commands','review','context'] },
+  { chapter:7, type:'docWeight', msg:'claude.md는 점점 무거워집니다', cap:'규칙을 계속 쌓기만 하면 문서가 작업을 누르기 시작합니다.', lines:18 },
+  { chapter:7, type:'moduleSplit', msg:'반복 패턴을 떼어냅니다', cap:'자주 쓰는 작업은 독립된 호출 단위가 됩니다.', modules:['Slash Commands','Skills','Rules'] },
+  { chapter:7, type:'qaRules', msg:'계속 실수하는 부분은 Rules가 됩니다', cap:'반복되는 QA 항목은 다시 작업 기준으로 돌아옵니다.', issues:['맥락 누락','버튼 텍스트 넘침','검수 누락','톤 불일치'] },
+  { chapter:7, type:'folderMap', msg:'프로젝트 폴더 자체가 Harness가 됩니다', cap:'작업 구조가 쌓이면 폴더 자체가 협업 시스템이 됩니다.', nodes:['content','deck','assets','rules','skills','qa'] },
+  { chapter:8, type:'adaptiveMap', msg:'Harness는 고정 구조가 아닙니다', cap:'workflow가 바뀌면 구조도 바뀌어야 합니다.', nodes:['workflow','team','model','rules','skills'] },
+  { chapter:8, type:'modelShift', msg:'모델이 바뀌면 Harness도 바뀝니다', cap:'모델 능력이 좋아질수록 남겨야 할 구조도 달라집니다.', left:'Old Model', right:'New Model' },
+  { chapter:8, type:'lessControl', msg:'좋은 Harness는 덜 방해합니다', cap:'통제보다 필요한 기준과 검수 루프가 중요해집니다.', left:'촘촘한 제약', right:'가벼운 가이드' },
+  { chapter:8, type:'wordSwap', msg:'통제가 아니라 협업', cap:'좋은 Harness는 AI와 사람이 자연스럽게 같이 일하게 만드는 구조입니다.', before:'Control', after:'Collaboration' },
+  { chapter:8, type:'flowOnly', msg:'최고의 AI가 아니라 나의 흐름', cap:'초반의 “그래서 뭘 써야하지?”에 대한 답입니다.', faded:['ChatGPT','Claude','Cursor','Gemini','Perplexity'], focus:'Workflow' },
+  { chapter:8, type:'extractFlow', msg:'Workflow는 설계보다 추출에 가깝습니다', cap:'반복된 실패와 수정, 관찰 속에서 조금씩 선명해집니다.', items:['실패','수정','관찰','패턴','Workflow'] },
+  { chapter:9, type:'noiseAdvice', msg:'정보를 전부 쫓아가지 마세요', cap:'다 따라갈 필요는 없습니다.', bubbles:['새 모델','새 프롬프트','새 프레임워크','새 방법론','새 벤치마크','새 플러그인','새 워크플로우','새 자동화'] },
+  { chapter:9, type:'plainCenter', msg:'내가 무엇을 만들고 싶은가', cap:'필요한 정보는 만들고 싶은 것이 생길 때 보입니다.' },
+  { chapter:9, type:'threeTools', msg:'처음에는 세 가지만', cap:'작게 시작해서 내 흐름에 맞게 바꾸면 충분합니다.', tools:[['Brainstorming','아이디어를 밀도 있게 펼치기'],['Grill Me','질문으로 생각을 깊게 만들기'],['Caveman','토큰과 맥락을 가볍게 정리하기']] },
+  { chapter:9, type:'customize', msg:'내 프로젝트에 맞게 조금씩', cap:'가져온 도구는 결국 내 작업 방식에 맞게 이름과 형태가 바뀝니다.', pairs:[['Brainstorming','my-brainstorm'],['Review','my-review'],['Rules','project-rules']] },
+  { chapter:9, type:'plainCenter', msg:'우선 뭐든 만들어보세요', cap:'결과를 만들면 workflow가 따라옵니다.', bg:'../assets/generated/workflow-desk.png' },
+  { chapter:9, type:'growLines', msg:'Workflow와 Harness는 결과물 안에서 자라납니다', cap:'결과물 안에서 반복 패턴이 선이 되고, 선이 구조가 됩니다.' },
+  { chapter:9, msg:'감사합니다', visual:'처음의 커버 톤으로 돌아가 발표를 닫습니다.', cap:'AI와 함께 자신만의 workflow를 만들어보세요.', closing:true }
+]
 
 const deck = document.getElementById('deck');
 const toc = document.getElementById('toc');
 
-chapters.forEach((title, i) => {
-  const item = document.createElement('div');
-  item.className = 'toc-item';
-  item.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span><span class="t">${title}</span>`;
-  toc.appendChild(item);
+const tocColumns = [chapters.slice(0, 5), chapters.slice(5)];
+tocColumns.forEach((column, columnIndex) => {
+  const list = document.createElement('div');
+  list.className = 'toc-list';
+  column.forEach((title, i) => {
+    const number = columnIndex * 5 + i + 1;
+    const item = document.createElement('div');
+    item.className = 'toc-item';
+    item.innerHTML = `<span class="n">${String(number).padStart(2, '0')}</span><span class="t">${title}</span>`;
+    list.appendChild(item);
+  });
+  toc.appendChild(list);
 });
 
 function visualHTML(s) {
+  if (s.tools) return `<div class="tool-cloud">${s.tools.map((name) => {
+    const file = name.toLowerCase();
+    return `<div class="tool-icon"><img class="tool-logo" src="../assets/logos/${file}.svg" alt="${name}"></div>`;
+  }).join('')}</div><div class="tool-question"><span>그래서 뭘 써야하지?</span></div>`;
+  if (s.typingText) return `<div class="typing-line">${s.typingText}</div>`;
   if (s.image) return `<img class="visual-image" src="${s.image}" alt=""><p class="visual-title">${s.visual}</p>`;
   if (s.horse) return `<div class="quote-mark">“</div><div class="horse-line"></div><p class="visual-title">${s.visual}</p>`;
   if (s.flow) return `<div class="diagram">${s.flow.map((x,i)=>`<div class="node ${i===s.flow.length-1?'accent-node':''}">${x}</div>${i<s.flow.length-1?'<div class="arrow">→</div>':''}`).join('')}</div><p class="visual-title">${s.visual}</p>`;
@@ -359,7 +1127,6 @@ function compareHTML(s) {
       <ul class="circle-list">${data.items.map(item => `<li>${item}</li>`).join('')}</ul>
     </div>`;
   return `
-    <div class="eyebrow">Structured Detail</div>
     <h1 class="title">${s.msg}</h1>
     <p class="sub">${s.cap}</p>
     <div class="content">
@@ -373,9 +1140,280 @@ function compareHTML(s) {
     </div>`;
 }
 
+function talkFlowHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="content">
+      <div class="talk-flow">
+        ${s.items.map(([title, desc], i) => `
+          <div class="talk-step">
+            <div class="talk-step-num">${String(i + 1).padStart(2, '0')}</div>
+            <div class="talk-step-title">${title}</div>
+            <p class="talk-step-desc">${desc}</p>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function infoNoiseHTML(s) {
+  const images = Array.from({ length:9 }, (_, i) => `../assets/images/image-${String(i + 1).padStart(2, '0')}.png`);
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <div class="content">
+      <div class="noise-board">
+        <div class="noise-bubble-layer">
+          ${s.bubbles.map(text => `<div class="noise-bubble">${text}</div>`).join('')}
+        </div>
+        <div class="noise-image-layer">
+          ${images.map((src, i) => `<img class="noise-image" src="${src}" alt="AI media capture ${i + 1}">`).join('')}
+        </div>
+        <div class="noise-message">${s.cap}</div>
+      </div>
+    </div>`;
+}
+
+function centerMessageHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>`;
+}
+
+function typingOnlyHTML(s) {
+  return `<div class="typing-line" data-step="idle" data-first-prompt="${s.typingText}" data-second-prompt="아침에 일어나서 가장 먼저 하는 일은"><span class="typing-line__prompt"></span><span class="typing-line__answer"></span></div>`;
+}
+
+function graphViewHTML(s) {
+  const patternRow = (className = '') => Array.from({ length:11 }, (_, i) => `<span class="${i === 5 ? 'is-center' : ''}" style="--i:${Math.abs(i - 5)}">문장·패턴</span>`).join('');
+  const rowCount = 15;
+  const centerRow = Math.floor(rowCount / 2);
+  const patternRows = Array.from({ length:rowCount }, (_, i) => {
+    const rowClass = i === centerRow ? 'graph-keyword__row--center' : '';
+    return `<div class="graph-keyword__row ${rowClass}">${patternRow()}</div>`;
+  }).join('');
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="graph-keyword" data-ascii-src="../assets/images/image-10.jpg"><div class="graph-keyword__field">${patternRows}</div><div class="graph-ascii" aria-hidden="true"></div></div>`;
+}
+
+function stepStyle(index) {
+  return `style="--d:${(index * .12).toFixed(2)}s"`;
+}
+
+function chipList(items) {
+  return items.map((item, i) => `<span class="module-card reveal-item" ${stepStyle(i)}>${item}</span>`).join('');
+}
+
+function wordClusterHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas">
+      <div class="word-cluster step-reveal">
+        <div class="word-cluster__center">${s.center}</div>
+        ${s.words.map((word, i) => `<div class="word-cluster__word" style="--d:${(.15 + i * .16).toFixed(2)}s">${word}</div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function flowCompareHTML(s) {
+  const flow = (items) => items.map((item, i) => `<span class="flow-chip reveal-item" ${stepStyle(i)}>${item}</span>${i < items.length - 1 ? '<span class="flow-arrow">→</span>' : ''}`).join('');
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas">
+      <div class="flow-compare step-reveal">
+        <div class="flow-panel flow-panel--left"><p class="flow-panel__label">Search</p><div class="flow-panel__steps">${flow(s.left)}</div></div>
+        <div class="flow-panel flow-panel--right"><p class="flow-panel__label">Workflow</p><div class="flow-panel__steps">${flow(s.right)}</div></div>
+      </div>
+    </div>`;
+}
+
+function simpleChainHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas">
+      <div class="simple-chain step-reveal">
+        ${s.steps.map((step, i) => `<span class="flow-chip reveal-item" ${stepStyle(i)}>${step}</span>${i < s.steps.length - 1 ? '<span class="flow-arrow">→</span>' : ''}`).join('')}
+      </div>
+    </div>`;
+}
+
+function linearStagesHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas">
+      <div class="linear-stages step-reveal">
+        ${s.stages.map((stage, i) => `<div class="stage-node reveal-item" ${stepStyle(i)}>${stage}</div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function partnerBoardHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas">
+      <div class="partner-board step-reveal">
+        <div class="chat-dot">AI</div>
+        <div class="board-shell">${s.nodes.map((node, i) => `<div class="board-node reveal-item" ${stepStyle(i)}>${node}</div>`).join('')}</div>
+      </div>
+    </div>`;
+}
+
+function harnessLinkHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas">
+      <div class="harness-map step-reveal">
+        <div class="harness-map__pair left">AI</div>
+        <div class="harness-map__pair right">Workflow</div>
+        <div class="harness-map__line"></div>
+        <div class="harness-label">Harness</div>
+        <div class="harness-spokes">${chipList(s.nodes)}</div>
+      </div>
+    </div>`;
+}
+
+function moduleSplitHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas">
+      <div class="module-split step-reveal">
+        <div class="heavy-doc">${Array.from({ length:14 }, (_, i) => `<div class="doc-line" ${stepStyle(i)}></div>`).join('')}</div>
+        <div class="module-list">${chipList(s.modules)}</div>
+      </div>
+    </div>`;
+}
+
+function plainCenterHTML(s) {
+  const style = s.bg ? `style="--center-bg:url('${s.bg}')"` : '';
+  return `<div class="plain-center" ${style}><h1 class="scene-word">${s.msg}</h1><p class="sub">${s.cap}</p></div>`;
+}
+
+function tagScatterHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="tag-scatter step-reveal">${s.tags.map((tag, i) => `<span class="scatter-tag reveal-item" ${stepStyle(i)}>${tag}</span>`).join('')}</div></div>`;
+}
+
+function chaosToLineHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas">
+      <div class="flow-compare step-reveal">
+        <div class="flow-panel flow-panel--left"><p class="flow-panel__label">Mess</p><div class="flow-panel__steps">${s.chaos.map((x, i) => `<span class="flow-chip reveal-item" ${stepStyle(i)}>${x}</span>`).join('')}</div></div>
+        <div class="flow-panel flow-panel--right"><p class="flow-panel__label">Pattern</p><div class="flow-panel__steps">${s.line.map((x, i) => `<span class="flow-chip reveal-item" ${stepStyle(i)}>${x}</span>${i < s.line.length - 1 ? '<span class="flow-arrow">→</span>' : ''}`).join('')}</div></div>
+      </div>
+    </div>`;
+}
+
+function promptStackHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="prompt-stack step-reveal">${s.prompts.map((p, i) => `<div class="prompt-line reveal-item" ${stepStyle(i)}>${p}</div>`).join('')}</div></div>`;
+}
+
+function loopCycleHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="loop-cycle step-reveal">${s.steps.map((step, i) => `<div class="loop-step reveal-item" ${stepStyle(i)}>${step}</div>`).join('')}</div></div>`;
+}
+
+function folderMapHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="folder-map step-reveal">${s.nodes.map((node, i) => `<div class="folder-node reveal-item" ${stepStyle(i)}>${node}</div>`).join('')}</div></div>`;
+}
+
+function docWeightHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="doc-weight">${Array.from({ length:s.lines }, (_, i) => `<div class="doc-line" style="--d:${(i * .08).toFixed(2)}s"></div>`).join('')}</div></div>`;
+}
+
+function qaRulesHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="qa-rules qa-list step-reveal">${s.issues.map((issue, i) => `<div class="qa-item reveal-item" ${stepStyle(i)}>${issue}</div>`).join('')}</div></div>`;
+}
+
+function modelShiftHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="model-shift step-reveal"><div class="model-card">${s.left}</div><div class="flow-arrow">→</div><div class="model-card">${s.right}</div></div></div>`;
+}
+
+function lessControlHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="less-control step-reveal"><div class="control-card">${s.left}</div><div class="control-card">${s.right}</div></div></div>`;
+}
+
+function wordSwapHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="word-swap step-reveal"><div class="swap-word before">${s.before}</div><div class="swap-word after">${s.after}</div></div></div>`;
+}
+
+function flowOnlyHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="flow-only step-reveal"><div class="faded-row">${s.faded.map(x => `<span>${x}</span>`).join('')}</div><div class="flow-focus">${s.focus}</div></div></div>`;
+}
+
+function extractFlowHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="extract-flow step-reveal">${s.items.map((item, i) => `<span class="extract-chip reveal-item" ${stepStyle(i)}>${item}</span>${i < s.items.length - 1 ? '<span class="flow-arrow">→</span>' : ''}`).join('')}</div></div>`;
+}
+
+function noiseAdviceHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <div class="scene-canvas"><div class="noise-advice step-reveal">${s.bubbles.map((tag, i) => `<span class="scatter-tag reveal-item" ${stepStyle(i)}>${tag}</span>`).join('')}<div class="noise-advice__message">${s.cap}</div></div></div>`;
+}
+
+function threeToolsHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="three-tools step-reveal">${s.tools.map(([name, desc], i) => `<div class="tool-card reveal-item" ${stepStyle(i)}><strong>${name}</strong><span>${desc}</span></div>`).join('')}</div></div>`;
+}
+
+function customizeHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="customize step-reveal">${s.pairs.map(([a, b], i) => `<div class="custom-pair reveal-item" ${stepStyle(i)}><span>${a}</span><span>→</span><span>${b}</span></div>`).join('')}</div></div>`;
+}
+
+function growLinesHTML(s) {
+  return `
+    <h1 class="title">${s.msg}</h1>
+    <p class="sub">${s.cap}</p>
+    <div class="scene-canvas"><div class="grow-lines step-reveal"><div class="grow-box"></div></div></div>`;
+}
+
 function structureGridHTML(s) {
   return `
-    <div class="eyebrow">Harness Anatomy</div>
     <h1 class="title">${s.msg}</h1>
     <p class="sub">${s.cap}</p>
     <div class="content">
@@ -392,7 +1430,6 @@ function structureGridHTML(s) {
 
 function timelineHTML(s) {
   return `
-    <div class="eyebrow">Workflow Detail</div>
     <h1 class="title">${s.msg}</h1>
     <p class="sub">${s.cap}</p>
     <div class="content">
@@ -410,7 +1447,6 @@ function timelineHTML(s) {
 
 function tableHTML(s) {
   return `
-    <div class="eyebrow">Comparison</div>
     <h1 class="title">${s.msg}</h1>
     <p class="sub">${s.cap}</p>
     <div class="content">
@@ -425,7 +1461,6 @@ function tableHTML(s) {
 
 function systemMapHTML(s) {
   return `
-    <div class="eyebrow">Harness System</div>
     <h1 class="title">${s.msg}</h1>
     <p class="sub">${s.cap}</p>
     <div class="content">
@@ -450,7 +1485,6 @@ function roadmapHTML(s) {
   const labels = [...s.active, ...s.later];
   const positions = [105, 380, 655, 930, 1205, 1480, 1755];
   return `
-    <div class="eyebrow">Starter Roadmap</div>
     <h1 class="title">${s.msg}</h1>
     <p class="sub">${s.cap}</p>
     <div class="content" style="display:flex;align-items:center;justify-content:center;margin-top:0;">
@@ -481,6 +1515,36 @@ function roadmapHTML(s) {
 
 function detailHTML(s) {
   if (s.type === 'compare') return compareHTML(s);
+  if (s.type === 'talkFlow') return talkFlowHTML(s);
+  if (s.type === 'infoNoise') return infoNoiseHTML(s);
+  if (s.type === 'centerMessage') return centerMessageHTML(s);
+  if (s.type === 'typingOnly') return typingOnlyHTML(s);
+  if (s.type === 'graphView') return graphViewHTML(s);
+  if (s.type === 'wordCluster') return wordClusterHTML(s);
+  if (s.type === 'flowCompare') return flowCompareHTML(s);
+  if (s.type === 'simpleChain') return simpleChainHTML(s);
+  if (s.type === 'linearStages') return linearStagesHTML(s);
+  if (s.type === 'partnerBoard') return partnerBoardHTML(s);
+  if (s.type === 'harnessLink') return harnessLinkHTML(s);
+  if (s.type === 'moduleSplit') return moduleSplitHTML(s);
+  if (s.type === 'plainCenter') return plainCenterHTML(s);
+  if (s.type === 'tagScatter') return tagScatterHTML(s);
+  if (s.type === 'chaosToLine') return chaosToLineHTML(s);
+  if (s.type === 'promptStack') return promptStackHTML(s);
+  if (s.type === 'loopCycle') return loopCycleHTML(s);
+  if (s.type === 'folderMap') return folderMapHTML(s);
+  if (s.type === 'docWeight') return docWeightHTML(s);
+  if (s.type === 'qaRules') return qaRulesHTML(s);
+  if (s.type === 'adaptiveMap') return folderMapHTML(s);
+  if (s.type === 'modelShift') return modelShiftHTML(s);
+  if (s.type === 'lessControl') return lessControlHTML(s);
+  if (s.type === 'wordSwap') return wordSwapHTML(s);
+  if (s.type === 'flowOnly') return flowOnlyHTML(s);
+  if (s.type === 'extractFlow') return extractFlowHTML(s);
+  if (s.type === 'noiseAdvice') return noiseAdviceHTML(s);
+  if (s.type === 'threeTools') return threeToolsHTML(s);
+  if (s.type === 'customize') return customizeHTML(s);
+  if (s.type === 'growLines') return growLinesHTML(s);
   if (s.type === 'structureGrid') return structureGridHTML(s);
   if (s.type === 'timeline') return timelineHTML(s);
   if (s.type === 'table') return tableHTML(s);
@@ -489,36 +1553,19 @@ function detailHTML(s) {
   return null;
 }
 
-let lastChapter = 0;
 slides.forEach((s) => {
-  if (s.chapter !== lastChapter) {
-    const chapter = document.createElement('section');
-    chapter.className = 'slide chapter-slide';
-    chapter.innerHTML = `<div class="chapter-kicker">Chapter ${String(s.chapter).padStart(2,'0')}</div><h2 class="chapter-title">${chapters[s.chapter - 1]}</h2><div class="chapter-line"></div>`;
-    deck.appendChild(chapter);
-    lastChapter = s.chapter;
-  }
-
   const section = document.createElement('section');
-  section.className = s.closing ? 'slide slide--closing' : 'slide';
+  section.className = s.closing ? 'slide slide--closing' : `slide ${s.type ? `slide--${s.type}` : ''}`;
   const detail = detailHTML(s);
   section.innerHTML = detail || (s.closing
     ? `<h2 class="message">${s.msg}</h2><p class="caption">${s.cap}</p>`
-    : `<div class="eyebrow">Slide ${String(slides.indexOf(s) + 1).padStart(2, '0')}</div><div class="scene-grid"><div><h2 class="message">${s.msg}</h2><p class="caption">${s.cap}</p></div><div class="visual-stage ${s.image ? 'has-image' : ''}">${visualHTML(s)}</div></div>`);
+    : `<h1 class="title">${s.msg}</h1>${s.cap ? `<p class="sub">${s.cap}</p>` : ''}<div class="content content--visual"><div class="visual-stage ${s.image ? 'has-image' : ''} ${s.tools ? 'visual-stage--tools' : ''} ${s.typingText ? 'visual-stage--typing' : ''}">${visualHTML(s)}</div></div>`);
   deck.appendChild(section);
 });
 
 const allSlides = [...document.querySelectorAll('.slide')];
 let current = 0;
-
-function setCounters() {
-  const total = allSlides.length;
-  allSlides.forEach((slide, i) => {
-    if (!slide.hasAttribute('data-hide-counter')) {
-      slide.dataset.count = `${String(i + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
-    }
-  });
-}
+let transitionTimer = null;
 
 function resizeDeck() {
   const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
@@ -528,21 +1575,241 @@ function resizeDeck() {
 }
 
 function go(index) {
-  current = Math.max(0, Math.min(index, allSlides.length - 1));
-  allSlides.forEach((slide, i) => slide.classList.toggle('active', i === current));
-  document.getElementById('progress').style.width = `${((current + 1) / allSlides.length) * 100}%`;
+  const target = Math.max(0, Math.min(index, allSlides.length - 1));
+  if (target === current) return;
+  clearTimeout(transitionTimer);
+
+  const from = current;
+  const to = target;
+  const shouldFadeOutIn = from === 4 && to === 5;
+
+  if (shouldFadeOutIn) {
+    const leaving = allSlides[from];
+    const entering = allSlides[to];
+    allSlides.forEach((slide, i) => {
+      if (i !== from && i !== to) slide.classList.remove('active', 'is-leaving');
+    });
+    leaving.classList.add('active', 'is-leaving');
+    entering.classList.remove('active', 'is-leaving');
+    current = to;
+    history.replaceState(null, '', `#${current + 1}`);
+    transitionTimer = setTimeout(() => {
+      leaving.classList.remove('active', 'is-leaving');
+      entering.classList.add('active');
+      startTypingOnlySlide(entering);
+    }, 560);
+    return;
+  }
+
+  current = target;
+  allSlides.forEach((slide, i) => {
+    slide.classList.toggle('active', i === current);
+    slide.classList.remove('is-leaving');
+  });
   history.replaceState(null, '', `#${current + 1}`);
+  startTypingOnlySlide(allSlides[current]);
 }
 
 function next() { go(current + 1); }
 function prev() { go(current - 1); }
 
+const typingTimers = new WeakMap();
+const wait = (ms) => new Promise(resolve => window.setTimeout(resolve, ms));
+
+function setTypingCursor(line, target) {
+  line.querySelectorAll('.has-cursor').forEach(el => el.classList.remove('has-cursor'));
+  if (target) target.classList.add('has-cursor');
+}
+
+async function typeText(element, text, speed = 58) {
+  element.textContent = '';
+  for (const char of text) {
+    element.textContent += char;
+    await wait(speed);
+  }
+}
+
+async function backspaceText(element, speed = 22) {
+  while (element.textContent.length > 0) {
+    element.textContent = element.textContent.slice(0, -1);
+    await wait(speed);
+  }
+}
+
+function startTypingOnlySlide(slide) {
+  if (!slide?.classList.contains('slide--typingOnly')) return;
+  const line = slide.querySelector('.typing-line');
+  const prompt = line.querySelector('.typing-line__prompt');
+  const answer = line.querySelector('.typing-line__answer');
+  window.clearTimeout(typingTimers.get(line));
+  line.dataset.step = 'intro';
+  line.dataset.animating = 'true';
+  prompt.textContent = '';
+  answer.textContent = '';
+  setTypingCursor(line, null);
+  const timer = window.setTimeout(async () => {
+    setTypingCursor(line, prompt);
+    await typeText(prompt, line.dataset.firstPrompt, 78);
+    line.dataset.step = 'first-ready';
+    line.dataset.animating = 'false';
+  }, 600);
+  typingTimers.set(line, timer);
+}
+
+function runTypingAction(line, action) {
+  if (line.dataset.animating === 'true') return true;
+  line.dataset.animating = 'true';
+  action().finally(() => {
+    line.dataset.animating = 'false';
+  });
+  return true;
+}
+
+function handleTypingAdvance(line) {
+  const prompt = line.querySelector('.typing-line__prompt');
+  const answer = line.querySelector('.typing-line__answer');
+  if (line.dataset.animating === 'true') return true;
+
+  if (line.dataset.step === 'first-ready') {
+    return runTypingAction(line, async () => {
+      setTypingCursor(line, answer);
+      await typeText(answer, '서울', 105);
+      line.dataset.step = 'first-answer';
+    });
+  }
+
+  if (line.dataset.step === 'first-answer') {
+    return runTypingAction(line, async () => {
+      setTypingCursor(line, answer);
+      await backspaceText(answer, 48);
+      setTypingCursor(line, prompt);
+      await backspaceText(prompt, 30);
+      await typeText(prompt, line.dataset.secondPrompt, 62);
+      line.dataset.step = 'second-ready';
+    });
+  }
+
+  if (line.dataset.step === 'second-ready') {
+    return runTypingAction(line, async () => {
+      setTypingCursor(line, answer);
+      await typeText(answer, '세수하기', 92);
+      line.dataset.step = 'answer-1';
+    });
+  }
+
+  if (line.dataset.step === 'answer-1') {
+    return runTypingAction(line, async () => {
+      setTypingCursor(line, answer);
+      await backspaceText(answer, 48);
+      await typeText(answer, '핸드폰보기', 84);
+      line.dataset.step = 'answer-2';
+    });
+  }
+
+  if (line.dataset.step === 'answer-2') {
+    return runTypingAction(line, async () => {
+      setTypingCursor(line, answer);
+      await backspaceText(answer, 48);
+      await typeText(answer, '커피마시기', 84);
+      line.dataset.step = 'done';
+    });
+  }
+
+  return false;
+}
+
+function buildPatternAscii(container) {
+  if (container.dataset.asciiReady === 'true' || container.dataset.asciiLoading === 'true') return;
+  container.dataset.asciiLoading = 'true';
+  const target = container.querySelector('.graph-ascii');
+  const image = new Image();
+  image.src = container.dataset.asciiSrc;
+  image.onload = () => {
+    const cols = 76;
+    const rows = 52;
+    const canvas = document.createElement('canvas');
+    canvas.width = cols;
+    canvas.height = rows;
+    const ctx = canvas.getContext('2d', { willReadFrequently:true });
+    ctx.drawImage(image, 0, 0, cols, rows);
+    const { data } = ctx.getImageData(0, 0, cols, rows);
+    const letters = ['문','장','패','턴'];
+    const cells = [];
+    for (let y = 0; y < rows; y += 1) {
+      for (let x = 0; x < cols; x += 1) {
+        const index = (y * cols + x) * 4;
+        const r = data[index];
+        const g = data[index + 1];
+        const b = data[index + 2];
+        const brightness = (r + g + b) / 3;
+        const isDarkDetail = brightness < 92 || (brightness < 142 && r < 120 && g < 130 && b < 120);
+        if (!isDarkDetail) {
+          cells.push('<span></span>');
+          continue;
+        }
+        const weight = Math.max(.28, Math.min(.95, (150 - brightness) / 118));
+        const char = letters[(x + y) % letters.length];
+        cells.push(`<span style="opacity:${weight.toFixed(2)}">${char}</span>`);
+      }
+    }
+    target.style.gridTemplateColumns = `repeat(${cols}, 9px)`;
+    target.innerHTML = cells.join('');
+    container.dataset.asciiReady = 'true';
+    container.dataset.asciiLoading = 'false';
+  };
+  image.onerror = () => {
+    container.dataset.asciiLoading = 'false';
+  };
+}
+
+function advance() {
+  const question = document.querySelector('.slide.active .tool-question');
+  if (question && !question.classList.contains('is-visible')) {
+    question.closest('.visual-stage--tools')?.classList.add('has-question');
+    question.classList.add('is-visible');
+    return;
+  }
+  const typingLine = document.querySelector('.slide.active.slide--typingOnly .typing-line');
+  if (typingLine && handleTypingAdvance(typingLine)) return;
+  const graphKeyword = document.querySelector('.slide.active.slide--graphView .graph-keyword');
+  if (graphKeyword && !graphKeyword.classList.contains('is-expanded')) {
+    graphKeyword.classList.add('is-expanded');
+    return;
+  }
+  if (graphKeyword && !graphKeyword.classList.contains('is-stacked')) {
+    graphKeyword.classList.add('is-stacked');
+    return;
+  }
+  if (graphKeyword && !graphKeyword.classList.contains('is-ascii')) {
+    buildPatternAscii(graphKeyword);
+    graphKeyword.classList.add('is-ascii');
+    return;
+  }
+  const noiseBoard = document.querySelector('.slide.active .noise-board');
+  if (noiseBoard && !noiseBoard.classList.contains('show-images')) {
+    noiseBoard.classList.add('show-images');
+    return;
+  }
+  if (noiseBoard && !noiseBoard.classList.contains('show-message')) {
+    noiseBoard.classList.add('show-message');
+    return;
+  }
+  const stepReveal = document.querySelector('.slide.active .step-reveal');
+  if (stepReveal && !stepReveal.classList.contains('is-revealed')) {
+    stepReveal.classList.add('is-revealed');
+    return;
+  }
+  next();
+}
+
 window.addEventListener('resize', resizeDeck);
 document.addEventListener('keydown', (e) => {
-  if (['ArrowRight','ArrowDown',' ','PageDown','Enter'].includes(e.key)) { e.preventDefault(); next(); }
+  if (['ArrowRight','ArrowDown',' ','PageDown','Enter'].includes(e.key)) { e.preventDefault(); advance(); }
   if (['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)) { e.preventDefault(); prev(); }
 });
-document.addEventListener('click', next);
+document.addEventListener('click', () => {
+  advance();
+});
 
 let startX = 0;
 document.addEventListener('touchstart', (e) => { startX = e.changedTouches[0].clientX; }, { passive:true });
@@ -551,7 +1818,6 @@ document.addEventListener('touchend', (e) => {
   if (Math.abs(dx) > 40) dx < 0 ? next() : prev();
 }, { passive:true });
 
-setCounters();
 resizeDeck();
 const initial = Number(location.hash.replace('#',''));
 go(Number.isFinite(initial) && initial > 0 ? initial - 1 : 0);
