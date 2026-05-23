@@ -862,6 +862,62 @@ tbody tr:last-child td { border-bottom:0; }
 .flow-compare {
   width:100%; min-height:560px; display:flex; align-items:center; justify-content:center;
 }
+.flow-compare--circles {
+  gap:68px;
+  min-height:600px;
+}
+.flow-circle {
+  width:460px;
+  height:460px;
+  border-radius:50%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:22px;
+  padding:70px 54px;
+  border:1.5px solid #000;
+  background:transparent;
+  transition:opacity .8s cubic-bezier(.22,1,.36,1), filter .8s ease, transform .8s cubic-bezier(.22,1,.36,1);
+}
+.flow-circle--to {
+  border:2px solid var(--accent);
+  opacity:0;
+  transform:translateY(12px);
+}
+.flow-compare.is-revealed .flow-circle--from { opacity:.2; filter:blur(.3px); }
+.flow-compare.is-revealed .flow-circle--to { opacity:1; transform:translateY(0); }
+.flow-circle__title {
+  font-size:42px;
+  line-height:1.18;
+  font-weight:800;
+  color:#000;
+}
+.flow-circle__list {
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.flow-circle__list li {
+  font-size:26px;
+  line-height:1.35;
+  font-weight:700;
+  color:#000;
+}
+.flow-circle-arrow {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--accent);
+  flex:0 0 auto;
+}
+.flow-circle-arrow svg {
+  width:50px;
+  height:50px;
+  stroke-width:1.5;
+}
 .flow-compare-svg { width:100%; max-width:1420px; overflow:visible; font-family:'Pretendard', sans-serif; }
 .flow-group--left {
   opacity:1; transition:opacity .8s cubic-bezier(.22,1,.36,1), filter .8s ease;
@@ -1297,43 +1353,22 @@ function wordClusterHTML(s) {
 }
 
 function flowCompareHTML(s) {
-  const topX = [430, 710, 990];
-  const bottomX = [290, 570, 850, 1130];
-  const ink = '#000';
-  const node = (x, y, label, num, accent, delay) => `
-    <g class="flow-node" style="--d:${delay}s">
-      <circle cx="${x}" cy="${y}" r="112" fill="rgba(255,255,255,.22)" stroke="${accent ? '#01D5DF' : ink}" stroke-width="${accent ? 2 : 1.5}"/>
-      <text x="${x}" y="${y - 24}" text-anchor="middle" dominant-baseline="central" fill="${accent ? '#01D5DF' : ink}" font-size="20" font-weight="800">${String(num).padStart(2, '0')}</text>
-      <text x="${x}" y="${y + 16}" text-anchor="middle" dominant-baseline="central" fill="${ink}" font-size="24" font-weight="800">${label}</text>
-    </g>`;
-  const connector = (xs, y, cx, accent, delay) => `
-    <g class="flow-connector" stroke="${accent ? '#01D5DF' : ink}" stroke-width="1.5" fill="none" style="--d:${delay}s">
-      <line x1="${cx}" y1="${y - 160}" x2="${cx}" y2="${y - 118}"/>
-      <line x1="${xs[0]}" y1="${y - 118}" x2="${xs[xs.length - 1]}" y2="${y - 118}"/>
-      ${xs.map(x => `<line x1="${x}" y1="${y - 118}" x2="${x}" y2="${y - 112}"/>`).join('')}
-    </g>`;
-  const pill = (x, width, label, accent, delay) => `
-    <g class="flow-pill" style="--d:${delay}s">
-      <rect x="${x - width / 2}" y="${accent ? 8 : 298}" width="${width}" height="58" rx="29" fill="${accent ? '#01D5DF' : '#000'}"/>
-      <text x="${x}" y="${accent ? 37 : 327}" text-anchor="middle" dominant-baseline="central" fill="${accent ? '#000' : '#FFF'}" font-size="23" font-weight="800">${label}</text>
-    </g>`;
   return `
     <h1 class="title">${s.msg}</h1>
     <p class="sub">${s.cap}</p>
     <div class="scene-canvas">
-      <div class="flow-compare step-reveal">
-        <svg class="flow-compare-svg" viewBox="0 0 1420 690">
-          <g class="flow-group--left">
-            ${connector(topX, 190, topX[1], true, '.05')}
-            ${pill(topX[1], 300, 'Search', true, '.12')}
-            ${s.left.map((label, i) => node(topX[i], 190, label, i + 1, true, (.22 + i * .12).toFixed(2))).join('')}
-          </g>
-          <g class="flow-group--right">
-            ${connector(bottomX, 480, (bottomX[1] + bottomX[2]) / 2, false, '.05')}
-            ${pill((bottomX[1] + bottomX[2]) / 2, 340, 'Workflow', false, '.12')}
-            ${s.right.map((label, i) => node(bottomX[i], 480, label, i + 4, false, (.22 + i * .12).toFixed(2))).join('')}
-          </g>
-        </svg>
+      <div class="flow-compare flow-compare--circles step-reveal">
+        <div class="flow-circle flow-circle--from">
+          <p class="flow-circle__title">검색창처럼<br>쓰는 AI</p>
+          <ul class="flow-circle__list">${s.left.map(item => `<li>${item}</li>`).join('')}</ul>
+        </div>
+        <div class="flow-circle-arrow" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </div>
+        <div class="flow-circle flow-circle--to">
+          <p class="flow-circle__title">작업 흐름 안의<br>AI</p>
+          <ul class="flow-circle__list">${s.right.map(item => `<li>${item}</li>`).join('')}</ul>
+        </div>
       </div>
     </div>`;
 }
