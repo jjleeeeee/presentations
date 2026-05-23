@@ -1,7 +1,7 @@
 ---
 name: presentation-slide-style-kit
 version: v2
-source_of_truth: ../01_ai-persona/deck/index.html
+source_of_truth: ../ai-persona/deck/index.html
 purpose: AI-generated single-file HTML presentations
 canvas:
   width: 1920
@@ -50,7 +50,7 @@ layout_defaults:
 
 ## 1. 기준과 사용 목적
 
-이 문서는 `../01_ai-persona/deck/index.html` 완성본을 기준으로 다음 단일 HTML 발표자료를 만들기 위한 AI 지시문이다. 실제 색상, 타이포, 여백, 컴포넌트 판단은 이 문서와 `../01_ai-persona/deck/index.html`을 우선한다.
+이 문서는 `../ai-persona/deck/index.html` 완성본을 기준으로 다음 단일 HTML 발표자료를 만들기 위한 AI 지시문이다. 실제 색상, 타이포, 여백, 컴포넌트 판단은 이 문서와 `../ai-persona/deck/index.html`을 우선한다.
 
 목표는 이미 완성된 발표자료의 화면 감각을 재사용하는 것이다. 모바일 앱 UI 토큰 스케일이나 다른 디자인 시스템 문서의 값은 발표자료에 그대로 적용하지 않는다.
 
@@ -64,7 +64,7 @@ layout_defaults:
 - 장식용 그라데이션, 복잡한 카드 모자이크, 마케팅형 히어로 구성은 사용하지 않는다.
 - 다이어그램은 SVG를 허용하되, 검정 배경 위에서 white/mint/gray만 사용한다.
 - 아이콘이 필요하면 Lucide의 line icon 스타일을 사용하고, 채움형/일러스트 아이콘은 사용하지 않는다.
-- 차트가 필요하면 `../01_ai-persona/deck/index.html`의 단순 SVG/바 차트 패턴을 재사용할 수 있지만, 새 정량 차트는 Chart.js를 우선한다.
+- 차트가 필요하면 `../ai-persona/deck/index.html`의 단순 SVG/바 차트 패턴을 재사용할 수 있지만, 새 정량 차트는 Chart.js를 우선한다.
 
 ## 3. Tokens
 
@@ -352,12 +352,12 @@ Use this block when asking an AI to generate another deck from this style:
 
 ```text
 Create a single-file HTML presentation using style-kit/slide-style-kit.md as the style source.
-Read the style kit first. If a layout decision is ambiguous, use 01_ai-persona/deck/index.html as the completed reference.
+Read the style kit first. If a layout decision is ambiguous, use ai-persona/deck/index.html as the completed reference.
 Use a fixed 1920x1080 .deck-wrapper scaled to the viewport.
-Use the dark presentation style from 01_ai-persona/deck/index.html: black background, white text, mint #01D5DF accents, large Pretendard typography, and no decorative gradients.
+Use the dark presentation style from ai-persona/deck/index.html: black background, white text, mint #01D5DF accents, large Pretendard typography, and no decorative gradients.
 Keep every slide within one viewport with no internal scrolling.
 Use 48px slide titles, 24px body/table/list text, 80px cover titles, and the component recipes from the style kit.
 If icons are needed, use Lucide line icons from https://lucide.dev/icons/ only.
-If charts are needed, prefer Chart.js from https://www.chartjs.org/docs/latest/; reuse 01_ai-persona/deck/index.html chart patterns only for simple static visuals.
+If charts are needed, prefer Chart.js from https://www.chartjs.org/docs/latest/; reuse ai-persona/deck/index.html chart patterns only for simple static visuals.
 Preserve click and arrow-key navigation.
 ```
