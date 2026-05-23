@@ -82,6 +82,73 @@ body {
   border-color:rgba(0,0,0,.16);
   background:rgba(255,255,255,.44);
 }
+.slide--coverBg {
+  background:#D5F3F1;
+  color:#000;
+  --bg:#D5F3F1;
+  --text:#000;
+  --gray-600:rgba(0,0,0,.58);
+  --gray-500:rgba(0,0,0,.44);
+  --border:rgba(0,0,0,.16);
+  --outline:rgba(0,0,0,.08);
+  --surface-2:rgba(255,255,255,.3);
+  --surface-3:rgba(255,255,255,.42);
+  --surface-4:rgba(255,255,255,.55);
+}
+.slide--coverBg::before {
+  content:''; position:absolute; inset:0;
+  background:url('../../style-kit/assets/background/figma-cover-gradient.svg') center/cover no-repeat;
+  z-index:0;
+}
+.slide--coverBg > * {
+  position:relative;
+  z-index:1;
+}
+.slide--coverBg .title,
+.slide--coverBg .sub,
+.slide--coverBg .scene-word,
+.slide--coverBg .harness-map__pair,
+.slide--coverBg .talk-step-title,
+.slide--coverBg .bullet-list li,
+.slide--coverBg th,
+.slide--coverBg td {
+  color:#000;
+}
+.slide--coverBg .sub,
+.slide--coverBg .talk-step-desc {
+  color:rgba(0,0,0,.58);
+}
+.slide--coverBg .flow-arrow,
+.slide--coverBg .scene-muted {
+  color:rgba(0,0,0,.34);
+}
+.slide--coverBg .flow-chip,
+.slide--coverBg .stage-node,
+.slide--coverBg .board-shell,
+.slide--coverBg .board-node,
+.slide--coverBg .chat-dot,
+.slide--coverBg .heavy-doc,
+.slide--coverBg .module-card,
+.slide--coverBg .scatter-tag,
+.slide--coverBg .loop-cycle,
+.slide--coverBg .loop-step,
+.slide--coverBg .folder-node,
+.slide--coverBg .table-wrap,
+.slide--coverBg .structure-card,
+.slide--coverBg .system-map {
+  border-color:rgba(0,0,0,.16);
+  background:rgba(255,255,255,.3);
+}
+.slide--coverBg .prompt-line {
+  color:#000;
+  background:rgba(255,255,255,.3);
+}
+.slide--coverBg .doc-line {
+  background:rgba(0,0,0,.18);
+}
+.slide--coverBg .plain-center::before {
+  display:none;
+}
 .slide--typingOnly {
   align-items:center;
   justify-content:center;
@@ -1232,22 +1299,23 @@ function wordClusterHTML(s) {
 function flowCompareHTML(s) {
   const topX = [430, 710, 990];
   const bottomX = [290, 570, 850, 1130];
+  const ink = '#000';
   const node = (x, y, label, num, accent, delay) => `
     <g class="flow-node" style="--d:${delay}s">
-      <circle cx="${x}" cy="${y}" r="112" fill="none" stroke="${accent ? '#01D5DF' : '#FFF'}" stroke-width="${accent ? 2 : 1.5}"/>
-      <text x="${x}" y="${y - 24}" text-anchor="middle" dominant-baseline="central" fill="${accent ? '#01D5DF' : '#FFF'}" font-size="20" font-weight="800">${String(num).padStart(2, '0')}</text>
-      <text x="${x}" y="${y + 16}" text-anchor="middle" dominant-baseline="central" fill="#FFF" font-size="24" font-weight="800">${label}</text>
+      <circle cx="${x}" cy="${y}" r="112" fill="rgba(255,255,255,.22)" stroke="${accent ? '#01D5DF' : ink}" stroke-width="${accent ? 2 : 1.5}"/>
+      <text x="${x}" y="${y - 24}" text-anchor="middle" dominant-baseline="central" fill="${accent ? '#01D5DF' : ink}" font-size="20" font-weight="800">${String(num).padStart(2, '0')}</text>
+      <text x="${x}" y="${y + 16}" text-anchor="middle" dominant-baseline="central" fill="${ink}" font-size="24" font-weight="800">${label}</text>
     </g>`;
   const connector = (xs, y, cx, accent, delay) => `
-    <g class="flow-connector" stroke="${accent ? '#01D5DF' : '#FFF'}" stroke-width="1.5" fill="none" style="--d:${delay}s">
+    <g class="flow-connector" stroke="${accent ? '#01D5DF' : ink}" stroke-width="1.5" fill="none" style="--d:${delay}s">
       <line x1="${cx}" y1="${y - 160}" x2="${cx}" y2="${y - 118}"/>
       <line x1="${xs[0]}" y1="${y - 118}" x2="${xs[xs.length - 1]}" y2="${y - 118}"/>
       ${xs.map(x => `<line x1="${x}" y1="${y - 118}" x2="${x}" y2="${y - 112}"/>`).join('')}
     </g>`;
   const pill = (x, width, label, accent, delay) => `
     <g class="flow-pill" style="--d:${delay}s">
-      <rect x="${x - width / 2}" y="${accent ? 8 : 298}" width="${width}" height="58" rx="29" fill="${accent ? '#01D5DF' : '#FFF'}"/>
-      <text x="${x}" y="${accent ? 37 : 327}" text-anchor="middle" dominant-baseline="central" fill="#000" font-size="23" font-weight="800">${label}</text>
+      <rect x="${x - width / 2}" y="${accent ? 8 : 298}" width="${width}" height="58" rx="29" fill="${accent ? '#01D5DF' : '#000'}"/>
+      <text x="${x}" y="${accent ? 37 : 327}" text-anchor="middle" dominant-baseline="central" fill="${accent ? '#000' : '#FFF'}" font-size="23" font-weight="800">${label}</text>
     </g>`;
   return `
     <h1 class="title">${s.msg}</h1>
@@ -1332,7 +1400,7 @@ function moduleSplitHTML(s) {
 }
 
 function plainCenterHTML(s) {
-  const style = s.bg ? `style="--center-bg:url('${s.bg}')"` : '';
+  const style = s.bg && !s.coverBg ? `style="--center-bg:url('${s.bg}')"` : '';
   return `<div class="plain-center" ${style}><h1 class="scene-word">${s.msg}</h1><p class="sub">${s.cap}</p></div>`;
 }
 
@@ -1593,9 +1661,11 @@ function detailHTML(s) {
   return null;
 }
 
-slides.forEach((s) => {
+slides.forEach((s, index) => {
   const section = document.createElement('section');
-  section.className = s.closing ? 'slide slide--closing' : `slide ${s.type ? `slide--${s.type}` : ''}`;
+  const actualSlideNumber = index + 3;
+  const coverBgClass = actualSlideNumber >= 6 ? ' slide--coverBg' : '';
+  section.className = s.closing ? `slide slide--closing${coverBgClass}` : `slide ${s.type ? `slide--${s.type}` : ''}${coverBgClass}`;
   const detail = detailHTML(s);
   section.innerHTML = detail || (s.closing
     ? `<h2 class="message">${s.msg}</h2><p class="caption">${s.cap}</p>`
