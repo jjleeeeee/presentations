@@ -955,228 +955,438 @@ tbody tr:last-child td { border-bottom:0; }
 .llm-flow {
   position:relative;
   width:100%;
-  height:620px;
-  display:grid;
-  grid-template-columns:1fr 360px 1fr;
-  align-items:center;
-  gap:42px;
+  max-width:none;
+  height:650px;
   color:#000;
 }
-.llm-flow__lane {
-  position:relative;
-  height:100%;
+.llm-flow__panel {
+  position:absolute;
+  top:0;
+  bottom:auto;
+  height:68px;
+  border:1px solid rgba(0,0,0,.1);
+  border-radius:18px;
+  background:rgba(255,255,255,.86);
+  box-shadow:0 18px 48px rgba(0,0,0,.06);
+  backdrop-filter:blur(14px);
+  opacity:0;
   display:flex;
   align-items:center;
   justify-content:center;
+  transform:translateY(16px) scale(.985);
 }
-.llm-flow__label {
-  position:absolute;
-  top:70px;
-  font-size:28px;
-  line-height:1;
-  font-weight:800;
-  color:rgba(0,0,0,.52);
+.llm-flow__panel--questions {
+  left:0;
+  width:620px;
 }
-.llm-flow__label--left { left:96px; }
-.llm-flow__label--right { right:110px; }
-.llm-flow__line {
+.llm-flow__panel--model {
+  left:50%;
+  width:360px;
+  transform:translateX(-50%) translateY(16px) scale(.985);
+}
+.llm-flow__panel--answers {
+  right:0;
+  width:620px;
+}
+.llm-flow.is-grouped .llm-flow__panel,
+.llm-flow.is-grouped .llm-flow__stage-arrow,
+.llm-flow.is-grouped .llm-flow__stream,
+.llm-flow.is-grouped .llm-flow__core {
+  animation:none;
+  opacity:0;
+  transform:translateY(-10px) scale(.98);
+  transition:
+    opacity .42s ease,
+    transform .42s cubic-bezier(.22,1,.36,1);
+}
+.llm-flow.is-grouped .llm-flow__panel--model {
+  transform:translateX(-50%) translateY(-10px) scale(.98);
+}
+.slide.active .llm-flow__panel--questions {
+  animation:flowPanelIn .62s cubic-bezier(.22,1,.36,1) .45s forwards;
+}
+.slide.active .llm-flow__panel--model {
+  animation:flowModelPanelIn .62s cubic-bezier(.22,1,.36,1) 2.25s forwards;
+}
+.slide.active .llm-flow__panel--answers {
+  animation:flowPanelIn .62s cubic-bezier(.22,1,.36,1) 4.05s forwards;
+}
+.llm-flow.is-revealed .llm-flow__panel,
+.llm-flow.is-revealed .llm-flow__panel--model {
+  animation:none;
+  opacity:1;
+  transform:translateY(0) scale(1);
+}
+.llm-flow.is-revealed .llm-flow__panel--model {
+  transform:translateX(-50%) translateY(0) scale(1);
+}
+.llm-flow__stage-arrow {
   position:absolute;
   top:50%;
-  width:82%;
-  height:1px;
-  background:rgba(0,0,0,.18);
-  transform:translateY(-50%) scaleX(0);
-  transform-origin:right center;
+  z-index:4;
+  transform:translate(-50%, -50%);
+  color:rgba(0,0,0,.52);
+  font-size:38px;
+  line-height:1;
+  font-weight:900;
+  opacity:0;
 }
-.llm-flow__line--out {
-  transform-origin:left center;
+.llm-flow__stage-arrow--left {
+  left:calc(50% - 220px);
 }
-.slide.active .llm-flow__line {
-  animation:llmLineIn .8s cubic-bezier(.22,1,.36,1) .95s forwards;
+.llm-flow__stage-arrow--right {
+  left:calc(50% + 220px);
 }
-.slide.active .llm-flow__line--out {
-  animation-delay:2.05s;
+.slide.active .llm-flow__stage-arrow--left {
+  animation:flowArrowIn .55s cubic-bezier(.22,1,.36,1) 2.32s forwards;
 }
-.slide.active .llm-flow.is-revealed .llm-flow__line,
-.slide.active .llm-flow.is-revealed .llm-flow__line--out {
+.slide.active .llm-flow__stage-arrow--right {
+  animation:flowArrowIn .55s cubic-bezier(.22,1,.36,1) 4.12s forwards;
+}
+.llm-flow.is-revealed .llm-flow__stage-arrow {
   animation:none;
-  transform:translateY(-50%) scaleX(1);
+  opacity:1;
+  transform:translate(-50%, -50%);
 }
-.llm-flow__particles {
+.llm-flow__label {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  padding:0;
+  border-radius:0;
+  background:transparent;
+  color:#000;
+  border:0;
+  font-size:18px;
+  line-height:1;
+  letter-spacing:.08em;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.llm-flow__label::before {
+  display:none;
+}
+.llm-flow__stream {
+  position:absolute;
+  inset:102px 0 34px;
+  pointer-events:none;
+  z-index:2;
+}
+.llm-flow__stream-line {
+  position:absolute;
+  left:var(--sx);
+  right:var(--ex);
+  top:var(--y);
+  height:1px;
+  overflow:hidden;
+  opacity:.5;
+}
+.llm-flow__stream-line::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg, transparent, rgba(0,0,0,.22), rgba(1,213,223,.5), rgba(0,0,0,.14), transparent);
+  transform:translateX(-102%);
+}
+.slide.active .llm-flow__stream-line::before {
+  animation:llmFlowLine 3.6s cubic-bezier(.22,1,.36,1) var(--d) forwards;
+}
+.llm-flow.is-revealed .llm-flow__stream-line::before {
+  animation:none;
+  transform:translateX(0);
+}
+.llm-flow__items {
   position:absolute;
   inset:0;
 }
-.llm-flow__particle {
+.llm-flow__field {
   position:absolute;
-  left:var(--x);
-  top:var(--y);
-  width:var(--s);
-  height:var(--s);
-  border-radius:50%;
-  background:rgba(0,0,0,.46);
-  opacity:0;
-  transform:translate3d(0, 0, 0) scale(.75);
+  top:100px;
+  bottom:34px;
+  pointer-events:none;
 }
-.slide.active .llm-flow__lane--question .llm-flow__particle {
-  animation:questionParticle 2.2s cubic-bezier(.22,1,.36,1) var(--d) forwards;
+.llm-flow__field--questions {
+  left:0;
+  width:620px;
 }
-.slide.active .llm-flow__lane--answer .llm-flow__particle {
-  animation:answerParticle 1.55s cubic-bezier(.22,1,.36,1) var(--d) forwards;
+.llm-flow__field--model {
+  left:50%;
+  width:360px;
+  transform:translateX(-50%);
 }
-.slide.active .llm-flow.is-revealed .llm-flow__particle {
-  animation:none;
-  opacity:.38;
-  transform:translate3d(0, 0, 0) scale(.82);
+.llm-flow__field--answers {
+  right:0;
+  width:620px;
 }
-.llm-flow__chip {
+.llm-flow__group-labels {
   position:absolute;
-  left:70px;
-  top:50%;
-  min-width:210px;
-  padding:20px 28px;
-  border-radius:999px;
-  border:1.5px solid rgba(0,0,0,.26);
-  background:rgba(255,255,255,.24);
-  backdrop-filter:blur(8px);
-  font-size:32px;
-  line-height:1;
-  font-weight:800;
-  text-align:center;
-  opacity:0;
-  transform:translateY(-50%) translateX(-34px);
+  top:0;
+  left:0;
+  right:0;
+  height:68px;
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:22px;
+  pointer-events:none;
 }
-.slide.active .llm-flow__chip--question {
-  animation:questionChip 1.85s cubic-bezier(.22,1,.36,1) .6s forwards;
-}
-.llm-flow.is-revealed .llm-flow__chip--question {
-  animation:none;
-  opacity:.18;
-  transform:translateY(-50%) translateX(340px) scale(.84);
-}
-.llm-flow__answer {
-  position:absolute;
-  right:62px;
-  top:50%;
-  display:flex;
-  align-items:center;
-  gap:16px;
-  min-width:230px;
-  padding:22px 30px;
-  border-radius:999px;
-  border:2px solid rgba(0,0,0,.42);
-  background:rgba(255,255,255,.24);
-  backdrop-filter:blur(8px);
-  font-size:34px;
-  line-height:1;
-  font-weight:800;
-  opacity:0;
-  transform:translateY(-50%) translateX(-34px);
-}
-.llm-flow__answer::before {
-  content:'';
-  width:12px;
-  height:12px;
-  border-radius:50%;
-  background:var(--accent);
-  box-shadow:0 0 0 7px rgba(1,213,223,.12);
-}
-.slide.active .llm-flow__answer {
-  animation:answerCard .85s cubic-bezier(.22,1,.36,1) 3s forwards;
-}
-.llm-flow.is-revealed .llm-flow__answer {
-  animation:none;
-  opacity:1;
-  transform:translateY(-50%) translateX(0);
-}
-.llm-flow__core {
-  position:relative;
-  width:320px;
-  height:320px;
-  border-radius:50%;
-  border:2px solid rgba(0,0,0,.6);
+.llm-flow__group-label {
+  height:68px;
+  border:1px solid rgba(0,0,0,.1);
+  border-radius:18px;
+  background:rgba(255,255,255,.88);
+  box-shadow:0 18px 48px rgba(0,0,0,.06);
+  backdrop-filter:blur(14px);
   display:flex;
   align-items:center;
   justify-content:center;
-  background:rgba(255,255,255,.12);
-  transform:scale(.9);
+  color:#000;
+  font-size:22px;
+  line-height:1;
+  font-weight:900;
+  opacity:0;
+  transform:translateY(14px) scale(.985);
+}
+.llm-flow.is-grouped .llm-flow__group-label {
+  animation:groupLabelIn .58s cubic-bezier(.22,1,.36,1) forwards;
+  animation-delay:calc(.34s + var(--gi) * .08s);
+}
+.llm-flow.is-grouped .llm-flow__field {
+  left:0;
+  right:0;
+  width:100%;
+  transform:none;
+}
+.llm-flow__item {
+  position:absolute;
+  left:var(--x);
+  top:var(--y);
+  width:272px;
+  min-height:46px;
+  padding:12px 22px 12px 34px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.1);
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.78));
+  color:rgba(0,0,0,.86);
+  backdrop-filter:blur(10px);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.085),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  font-size:17px;
+  line-height:1.2;
+  font-weight:800;
+  white-space:nowrap;
+  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  transform:translate3d(var(--from-x), 10px, 0) scale(.96);
+  z-index:2;
+}
+.llm-flow__item::before {
+  content:'';
+  position:absolute;
+  left:16px;
+  top:50%;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 0 5px rgba(1,213,223,.12);
+  transform:translateY(-50%);
+}
+.llm-flow__item::after {
+  display:none;
+}
+.slide.active .llm-flow__item--question {
+  animation:flowBubbleIn .58s cubic-bezier(.22,1,.36,1) var(--d) forwards;
+}
+.slide.active .llm-flow__item--answer {
+  animation:flowBubbleIn .58s cubic-bezier(.22,1,.36,1) var(--d) forwards;
+}
+.llm-flow.is-revealed .llm-flow__item {
+  animation:none;
+  opacity:1;
+  transform:translate3d(0, 0, 0) scale(1);
+}
+.llm-flow.is-revealed .llm-flow__item--question {
+  opacity:1;
+}
+.llm-flow.is-grouped .llm-flow__item {
+  animation:none;
+  left:var(--gx);
+  top:var(--gy);
+  opacity:1;
+  width:250px;
+  min-height:42px;
+  padding:11px 18px 11px 30px;
+  font-size:16px;
+  transform:translate3d(0, 0, 0) scale(.96);
+  transition:
+    left .9s cubic-bezier(.22,1,.36,1),
+    top .9s cubic-bezier(.22,1,.36,1),
+    width .9s cubic-bezier(.22,1,.36,1),
+    transform .9s cubic-bezier(.22,1,.36,1),
+    opacity .5s ease;
+  transition-delay:var(--gd);
+}
+.llm-flow.is-grouped .llm-flow__item:hover {
+  transform:translate3d(0, -2px, 0) scale(.98);
+}
+.llm-flow__core {
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:auto;
+  height:auto;
+  border-radius:0;
+  border:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:transparent;
+  box-shadow:none;
+  transform:translate(-50%, -50%) scale(.92);
   opacity:0;
 }
 .slide.active .llm-flow__core {
-  animation:coreIn .85s cubic-bezier(.22,1,.36,1) .45s forwards, corePulse .85s ease 1.85s;
+  animation:coreIn .65s cubic-bezier(.22,1,.36,1) 2.52s forwards;
 }
 .llm-flow.is-revealed .llm-flow__core {
   animation:none;
   opacity:1;
-  transform:scale(1);
+  transform:translate(-50%, -50%) scale(1);
 }
 .llm-flow__core::before,
 .llm-flow__core::after {
-  content:'';
-  position:absolute;
-  border-radius:50%;
-  border:1px solid rgba(0,0,0,.18);
+  display:none;
 }
-.llm-flow__core::before { inset:34px; }
-.llm-flow__core::after { inset:76px; border-color:rgba(1,213,223,.55); }
-.llm-flow__mark {
+.llm-flow__logo-grid {
   position:relative;
   z-index:1;
-  width:124px;
-  height:124px;
-  border-radius:32px;
-  border:2px solid rgba(0,0,0,.72);
+  display:grid;
+  grid-template-columns:repeat(6, 36px);
+  grid-auto-rows:72px;
+  place-content:center;
+  justify-items:center;
+  gap:18px;
+}
+.llm-flow__logo-tile:nth-child(1) { grid-column:1 / span 2; }
+.llm-flow__logo-tile:nth-child(2) { grid-column:3 / span 2; }
+.llm-flow__logo-tile:nth-child(3) { grid-column:5 / span 2; }
+.llm-flow__logo-tile:nth-child(4) {
+  grid-column:2 / span 2;
+}
+.llm-flow__logo-tile:nth-child(5) {
+  grid-column:4 / span 2;
+}
+.llm-flow__logo-tile {
+  width:72px;
+  height:72px;
+  border-radius:18px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:36px;
-  line-height:1;
-  font-weight:900;
-  letter-spacing:0;
-  color:#000;
-  background:rgba(255,255,255,.18);
+  background:#fff;
+  border:1px solid rgba(0,0,0,.14);
+  box-shadow:0 18px 38px rgba(0,0,0,.07);
+  opacity:0;
+  transform:translateY(10px) scale(.94);
 }
-.llm-flow__mark::before,
-.llm-flow__mark::after {
-  content:'';
+.llm-flow__logo-tile img {
+  width:38px;
+  height:38px;
+  object-fit:contain;
+  filter:brightness(0) saturate(100%);
+  opacity:.88;
+}
+.slide.active .llm-flow__logo-tile {
+  animation:tool-dissolve .55s ease forwards;
+}
+.slide.active .llm-flow__logo-tile:nth-child(1) { animation-delay:2.72s; }
+.slide.active .llm-flow__logo-tile:nth-child(2) { animation-delay:2.96s; }
+.slide.active .llm-flow__logo-tile:nth-child(3) { animation-delay:3.20s; }
+.slide.active .llm-flow__logo-tile:nth-child(4) { animation-delay:3.44s; }
+.slide.active .llm-flow__logo-tile:nth-child(5) { animation-delay:3.68s; }
+.llm-flow.is-revealed .llm-flow__logo-tile {
+  animation:none;
+  opacity:1;
+  transform:translateY(0) scale(1);
+}
+.llm-flow__pulse {
   position:absolute;
-  inset:20px;
-  border:2px solid rgba(0,0,0,.26);
-  border-radius:24px;
-  transform:rotate(45deg);
+  left:50%;
+  top:50%;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  border:1px solid rgba(1,213,223,.5);
+  opacity:0;
+  transform:translate(-50%, -50%) scale(.4);
 }
-.llm-flow__mark::after {
-  inset:35px;
-  border-color:var(--accent);
-  opacity:.72;
-  transform:rotate(0deg);
+.slide.active .llm-flow__pulse {
+  animation:llmPulse 1.7s ease var(--d) forwards;
 }
-@keyframes llmLineIn {
-  to { transform:translateY(-50%) scaleX(1); }
+.llm-flow.is-revealed .llm-flow__pulse {
+  animation:none;
+  opacity:0;
+}
+.slide.active .llm-flow.is-grouped .llm-flow__panel,
+.slide.active .llm-flow.is-grouped .llm-flow__stage-arrow,
+.slide.active .llm-flow.is-grouped .llm-flow__stream,
+.slide.active .llm-flow.is-grouped .llm-flow__core,
+.llm-flow.is-revealed.is-grouped .llm-flow__panel,
+.llm-flow.is-revealed.is-grouped .llm-flow__stage-arrow,
+.llm-flow.is-revealed.is-grouped .llm-flow__stream,
+.llm-flow.is-revealed.is-grouped .llm-flow__core {
+  animation:none;
+  opacity:0;
+  transform:translateY(-10px) scale(.98);
+}
+.slide.active .llm-flow.is-grouped .llm-flow__panel--model,
+.llm-flow.is-revealed.is-grouped .llm-flow__panel--model,
+.slide.active .llm-flow.is-grouped .llm-flow__core,
+.llm-flow.is-revealed.is-grouped .llm-flow__core {
+  transform:translateX(-50%) translateY(-10px) scale(.98);
+}
+.slide.active .llm-flow.is-grouped .llm-flow__logo-tile,
+.llm-flow.is-revealed.is-grouped .llm-flow__logo-tile {
+  animation:none;
+  opacity:0;
+  transform:translateY(-8px) scale(.92);
+}
+@keyframes llmFlowLine {
+  0% { transform:translateX(-102%); opacity:.2; }
+  45% { opacity:1; }
+  100% { transform:translateX(102%); opacity:.35; }
+}
+@keyframes flowPanelIn {
+  to { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes flowModelPanelIn {
+  to { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+}
+@keyframes groupLabelIn {
+  to { opacity:1; transform:translateY(0) scale(1); }
 }
 @keyframes coreIn {
-  to { opacity:1; transform:scale(1); }
+  to { opacity:1; transform:translate(-50%, -50%) scale(1); }
 }
 @keyframes corePulse {
   0%, 100% { box-shadow:none; }
-  48% { box-shadow:0 0 0 18px rgba(1,213,223,.15); border-color:rgba(1,213,223,.78); }
+  50% { box-shadow:0 0 0 26px rgba(1,213,223,.14); border-color:rgba(1,213,223,.78); }
 }
-@keyframes questionChip {
-  0% { opacity:0; transform:translateY(-50%) translateX(-34px) scale(.96); }
-  32% { opacity:1; transform:translateY(-50%) translateX(0) scale(1); }
-  100% { opacity:.18; transform:translateY(-50%) translateX(340px) scale(.84); }
+@keyframes flowBubbleIn {
+  to { opacity:1; transform:translate3d(0, 0, 0) scale(1); }
 }
-@keyframes answerCard {
-  to { opacity:1; transform:translateY(-50%) translateX(0); }
+@keyframes flowArrowIn {
+  to { opacity:1; transform:translate(-50%, -50%); }
 }
-@keyframes questionParticle {
-  0% { opacity:0; transform:translate3d(-20px, 0, 0) scale(.72); }
-  22% { opacity:.45; }
-  100% { opacity:.12; transform:translate3d(380px, var(--dy), 0) scale(.46); }
-}
-@keyframes answerParticle {
-  0% { opacity:0; transform:translate3d(-250px, var(--dy), 0) scale(.55); }
-  26% { opacity:.34; }
-  100% { opacity:.22; transform:translate3d(0, 0, 0) scale(.82); }
+@keyframes llmPulse {
+  0% { opacity:0; transform:translate(-50%, -50%) scale(.4); }
+  20% { opacity:.5; }
+  100% { opacity:0; transform:translate(-50%, -50%) scale(12); }
 }
 .flow-compare-svg { width:100%; max-width:1420px; overflow:visible; font-family:'Pretendard', sans-serif; }
 .flow-group--left {
@@ -1454,7 +1664,7 @@ const slides = [
   { chapter:1, type:'centerMessage', msg:'AI 툴 소개가 아니라 작업 흐름의 이야기', cap:'LLM을 가볍게 이해하고, 실제 작업에 연결한 뒤, 나만의 하네스와 워크플로우로 정리해봅니다.' },
   { chapter:2, type:'typingOnly', typingText:'대한민국의 수도는' },
   { chapter:2, type:'graphView', msg:'LLM은 다음 말을 예측하는 모델입니다.', cap:'엄청난 양의 문장과 패턴이 쌓이면, 단순한 예측이 요약·추론·코드·기획처럼 보이기 시작합니다.' },
-  { chapter:2, type:'llmFlow', msg:'LLM은 검색 도구가 아니라<br>작업 인터페이스가 됩니다.', cap:'질문을 넣으면 모델을 지나 답이 나옵니다.', question:'질문', answer:'답' },
+  { chapter:2, type:'llmFlow', msg:'LLM은 검색 도구가 아니라<br>작업 인터페이스가 됩니다.', cap:'질문을 넣으면 모델을 지나 답이 나옵니다.' },
   { chapter:4, type:'harnessLink', msg:'이 구조를 Harness라고 부릅니다', cap:'AI와 workflow를 안정적으로 연결하는 구조입니다.', nodes:['Context','Rules','Skills','Commands','QA'] },
   { chapter:4, type:'plainCenter', msg:'처음에는 그냥 만듭니다', cap:'설계보다 먼저 결과', bg:'../assets/generated/workflow-desk.png' },
   { chapter:5, type:'plainCenter', msg:'LLM은 야생마와 비슷합니다', cap:'강력하지만 먼저 성향을 알아야 합니다.', bg:'../assets/generated/wild-horse.png' },
@@ -1638,43 +1848,109 @@ function flowCompareHTML(s) {
 }
 
 function llmFlowHTML(s) {
-  const questionDots = [
-    ['18%','38%','10px','.78s','-26px'],
-    ['30%','28%','16px','.92s','18px'],
-    ['34%','66%','11px','1.03s','-12px'],
-    ['46%','42%','8px','1.12s','30px'],
-    ['52%','59%','13px','1.23s','-24px'],
-    ['62%','34%','9px','1.34s','14px']
+  const questions = [
+    ['이 작업 범위부터 쪼개줘', 0, 0],
+    ['우선순위와 일정 잡아줘', 0, 1],
+    ['사용자 흐름을 설계해줘', 1, 0],
+    ['화면 구조를 정리해줘', 1, 1],
+    ['컴포넌트 단위로 나눠줘', 1, 2],
+    ['기능 구현 순서를 잡아줘', 2, 0],
+    ['코드 초안 만들어줘', 2, 1],
+    ['엣지 케이스 찾아줘', 3, 0],
+    ['QA 체크리스트 만들어줘', 3, 1],
+    ['리뷰 기준을 정리해줘', 3, 2]
   ];
-  const answerDots = [
-    ['32%','36%','9px','2.34s','-18px'],
-    ['44%','61%','15px','2.46s','22px'],
-    ['56%','31%','11px','2.58s','-28px'],
-    ['66%','52%','8px','2.72s','16px'],
-    ['76%','67%','12px','2.86s','-12px']
+  const answers = [
+    ['작업 단위와 산출물', 0, 2],
+    ['마일스톤과 리스크', 0, 3],
+    ['진입 / 행동 / 완료 흐름', 1, 3],
+    ['정보 구조와 상태', 1, 4],
+    ['역할별 컴포넌트 목록', 2, 2],
+    ['작업 순서와 의존성', 2, 3],
+    ['구현 가능한 코드 초안', 2, 4],
+    ['누락 조건과 예외 상황', 3, 3],
+    ['화면별 검증 항목', 3, 4],
+    ['범위 밖 항목 정리', 0, 4]
   ];
-  const dotsHTML = (dots) => dots.map(([x, y, size, delay, dy]) => (
-    `<span class="llm-flow__particle" style="--x:${x};--y:${y};--s:${size};--d:${delay};--dy:${dy}"></span>`
+  const groupLabels = ['계획','설계','구현','검증'];
+  const groupX = ['3%','27%','51%','75%'];
+  const groupY = ['19%','31%','43%','55%','67%'];
+  const questionPositions = [
+    ['25%','8%','.92s'],
+    ['31%','16%','1.04s'],
+    ['20%','24%','1.16s'],
+    ['35%','32%','1.28s'],
+    ['23%','40%','1.40s'],
+    ['31%','48%','1.52s'],
+    ['18%','56%','1.64s'],
+    ['30%','64%','1.76s'],
+    ['24%','72%','1.88s'],
+    ['34%','80%','2.00s']
+  ];
+  const answerPositions = [
+    ['25%','8%','4.55s'],
+    ['35%','16%','4.67s'],
+    ['19%','24%','4.79s'],
+    ['31%','32%','4.91s'],
+    ['23%','40%','5.03s'],
+    ['37%','48%','5.15s'],
+    ['18%','56%','5.27s'],
+    ['30%','64%','5.39s'],
+    ['41%','72%','5.51s'],
+    ['32%','80%','5.63s']
+  ];
+  const flowLines = ['10%','18%','28%','37%','47%','57%','66%','76%','85%'];
+  const groupStyle = (group, row, i) => `--gx:${groupX[group]};--gy:${groupY[row]};--gd:${(.08 + i * .025).toFixed(3)}s`;
+  const questionHTML = questions.map(([text, group, row], i) => {
+    const [x, y, d] = questionPositions[i];
+    return `<div class="llm-flow__item llm-flow__item--question" style="--x:${x};--y:${y};--d:${d};--from-x:-36px;${groupStyle(group, row, i)}">${text}</div>`;
+  }).join('');
+  const answerHTML = answers.map(([text, group, row], i) => {
+    const [x, y, d] = answerPositions[i];
+    return `<div class="llm-flow__item llm-flow__item--answer" style="--x:${x};--y:${y};--d:${d};--from-x:-28px;${groupStyle(group, row, i + questions.length)}">${text}</div>`;
+  }).join('');
+  const groupLabelsHTML = groupLabels.map((label, i) => (
+    `<div class="llm-flow__group-label" style="--gi:${i}">${label}</div>`
+  )).join('');
+  const linesHTML = flowLines.map((y, i) => (
+    `<span class="llm-flow__stream-line" style="--sx:${i % 2 ? '12%' : '8%'};--ex:${i % 2 ? '12%' : '8%'};--y:${y};--d:${(1.1 + i * .18).toFixed(2)}s"></span>`
+  )).join('');
+  const pulsesHTML = Array.from({ length:3 }, (_, i) => (
+    `<span class="llm-flow__pulse" style="--d:${(2.85 + i * .36).toFixed(2)}s"></span>`
+  )).join('');
+  const logos = ['chatgpt','claude','cursor','gemini','perplexity'];
+  const logosHTML = logos.map((logo) => (
+    `<span class="llm-flow__logo-tile"><img src="../assets/logos/${logo}.svg" alt=""></span>`
   )).join('');
   return `
     <h1 class="title">${s.msg}</h1>
     <p class="sub">${s.cap}</p>
     <div class="scene-canvas">
       <div class="llm-flow step-reveal" aria-label="질문이 LLM 모델을 지나 답으로 나오는 흐름">
-        <div class="llm-flow__lane llm-flow__lane--question">
-          <div class="llm-flow__label llm-flow__label--left">INPUT</div>
-          <div class="llm-flow__line"></div>
-          <div class="llm-flow__particles">${dotsHTML(questionDots)}</div>
-          <div class="llm-flow__chip llm-flow__chip--question">${s.question}</div>
+        <div class="llm-flow__stream">${linesHTML}</div>
+        <div class="llm-flow__group-labels">${groupLabelsHTML}</div>
+        <div class="llm-flow__panel llm-flow__panel--questions">
+          <div class="llm-flow__label">Question</div>
         </div>
-        <div class="llm-flow__core" aria-hidden="true">
-          <div class="llm-flow__mark">LLM</div>
+        <div class="llm-flow__field llm-flow__field--questions">
+          <div class="llm-flow__items llm-flow__items--questions">${questionHTML}</div>
         </div>
-        <div class="llm-flow__lane llm-flow__lane--answer">
-          <div class="llm-flow__label llm-flow__label--right">OUTPUT</div>
-          <div class="llm-flow__line llm-flow__line--out"></div>
-          <div class="llm-flow__particles">${dotsHTML(answerDots)}</div>
-          <div class="llm-flow__answer">${s.answer}</div>
+        <div class="llm-flow__stage-arrow llm-flow__stage-arrow--left">→</div>
+        <div class="llm-flow__panel llm-flow__panel--model">
+          <div class="llm-flow__label">LLM</div>
+        </div>
+        <div class="llm-flow__field llm-flow__field--model">
+          <div class="llm-flow__core" aria-hidden="true">
+            ${pulsesHTML}
+            <div class="llm-flow__logo-grid">${logosHTML}</div>
+          </div>
+        </div>
+        <div class="llm-flow__stage-arrow llm-flow__stage-arrow--right">→</div>
+        <div class="llm-flow__panel llm-flow__panel--answers">
+          <div class="llm-flow__label">Answer</div>
+        </div>
+        <div class="llm-flow__field llm-flow__field--answers">
+          <div class="llm-flow__items llm-flow__items--answers">${answerHTML}</div>
         </div>
       </div>
     </div>`;
@@ -2245,6 +2521,11 @@ function advance() {
   }
   if (noiseBoard && !noiseBoard.classList.contains('show-message')) {
     noiseBoard.classList.add('show-message');
+    return;
+  }
+  const llmFlow = document.querySelector('.slide.active .llm-flow');
+  if (llmFlow && !llmFlow.classList.contains('is-grouped')) {
+    llmFlow.classList.add('is-grouped');
     return;
   }
   const stepReveal = document.querySelector('.slide.active .step-reveal');
